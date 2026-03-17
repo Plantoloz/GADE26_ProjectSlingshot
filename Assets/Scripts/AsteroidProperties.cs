@@ -21,6 +21,7 @@ public class AsteroidProperties : MonoBehaviour
         // Optional: Randomize initial rotation for visual variety
         // Randomize color slightly to distinguish between different "densities"
         GetComponent<Renderer>().material.color *= Random.Range(0.8f, 1.2f);
-        transform.rotation = Quaternion.Euler(0, 0, Random.Range(0, 360));
+        
+        transform.rotation = Quaternion.Euler(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
     }
 }
