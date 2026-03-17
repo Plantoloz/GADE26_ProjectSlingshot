@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8302329715757533673}
   - component: {fileID: 8320121739416993557}
   - component: {fileID: 1182723340824398329}
+  - component: {fileID: 9175248556278720336}
   m_Layer: 0
   m_Name: Asteroid
   m_TagString: Untagged
@@ -154,3 +155,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
   globalGravity: 10
+--- !u!114 &9175248556278720336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6894702072479771844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac9c20eac3974f70a7ee49e392be1dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AsteroidProperties
+  minSize: 0.5
+  maxSize: 3
+  massMultiplier: 2
