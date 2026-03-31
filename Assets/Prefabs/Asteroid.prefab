@@ -123,7 +123,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6894702072479771844}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 0.1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -154,6 +154,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a7b0d7ad71ae46fa804ae0e9b18afed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
+  isAttractor: 1
+  isAttractee: 0
   globalGravity: 10
 --- !u!114 &9175248556278720336
 MonoBehaviour:
@@ -169,4 +171,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AsteroidProperties
   minSize: 0.5
   maxSize: 3
-  massMultiplier: 2
+  massMultiplier: 0.2
+  minInitialVelocity: 0.2
+  maxInitialVelocity: 2
+  minAngularVelocity: 2
+  maxAngularVelocity: 10
