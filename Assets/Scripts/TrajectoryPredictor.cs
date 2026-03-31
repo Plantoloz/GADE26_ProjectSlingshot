@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
@@ -21,35 +22,66 @@ public class TrajectoryPredictor : MonoBehaviour
         DrawProjection();
     }
 
+    private struct VirtualBody
+    {
+        public GravityBody body;
+        public Vector3 position;
+        public Vector3 velocity;
+    }
+
     void DrawProjection()
     {
         line.positionCount = predictionSteps;
         
-        Vector3 virtualPos = transform.position;
-        Vector3 virtualVel = rb.linearVelocity;
+        Vector3 virtualPlayerPos = transform.position;
+        Vector3 virtualPlayerVel = rb.linearVelocity;
+
+        // Capture initial state of all relevant attractors
+        List<VirtualBody> virtualAttractors = new List<VirtualBody>();
+        foreach (var body in GravityBody.allBodies)
+        {
+            if (body.gameObject == gameObject || !body.isAttractor) continue;
+            
+            virtualAttractors.Add(new VirtualBody {
+                body = body,
+                position = body.rb.position,
+                velocity = body.rb.linearVelocity
+            });
+        }
 
         for (int i = 0; i < predictionSteps; i++)
         {
-            line.SetPosition(i, virtualPos);
+            // Safety Check: Stop if we hit NaN or Infinity
+            if (!float.IsFinite(virtualPlayerPos.x) || !float.IsFinite(virtualPlayerPos.y)) break;
 
-            // Calculate gravity from all active attractors at this virtual point
-            Vector3 totalGravity = Vector3.zero;
-            foreach (var body in GravityBody.allBodies)
+            line.SetPosition(i, virtualPlayerPos);
+
+            // 1. Calculate gravity acceleration from all virtual attractors
+            Vector3 totalGravityAccel = Vector3.zero;
+            foreach (var vBody in virtualAttractors)
             {
-                if (body.gameObject == gameObject || !body.isAttractor) continue;
+                Vector3 dir = vBody.position - virtualPlayerPos;
+                float dist = dir.magnitude;
 
-                Vector3 dir = body.rb.position - virtualPos;
-                float distSq = dir.sqrMagnitude;
-                if (distSq > 0.1f) // Avoid division by zero
+                if (dist > 0.01f && dist < GravityBody.maxInfluenceDistance)
                 {
-                    float force = GravityBody.G * (rb.mass * body.rb.mass) / distSq;
-                    totalGravity += dir.normalized * (force / rb.mass);
+                    // Acceleration: a = G * m_other / r
+                    float accelMag = GravityBody.G * vBody.body.rb.mass / Mathf.Max(dist, GravityBody.minForceDistance);
+                    totalGravityAccel += dir.normalized * accelMag;
                 }
             }
 
-            // Update virtual physics
-            virtualVel += totalGravity * stepTime;
-            virtualPos += virtualVel * stepTime;
+            // 2. Update virtual player physics
+            virtualPlayerVel += totalGravityAccel * stepTime;
+            virtualPlayerPos += virtualPlayerVel * stepTime;
+
+            // 3. Update virtual attractor positions (move them forward linearly based on their velocity)
+            for (int j = 0; j < virtualAttractors.Count; j++)
+            {
+                var vBody = virtualAttractors[j];
+                vBody.position += vBody.velocity * stepTime;
+                virtualAttractors[j] = vBody; // Update struct in list
+            }
         }
     }
 }

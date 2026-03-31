@@ -18,7 +18,7 @@ public class AsteroidProperties : MonoBehaviour
 
         // 2. Correlate Mass to Size
         Rigidbody rb = GetComponent<Rigidbody>();
-        rb.mass = randomScale * massMultiplier;
+        rb.mass = randomScale * massMultiplier * rb.mass;
 
         // 3. Set Initial Velocity
         Vector2 randomDir = Random.insideUnitCircle.normalized;

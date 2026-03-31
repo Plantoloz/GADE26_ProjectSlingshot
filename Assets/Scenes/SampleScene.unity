@@ -644,8 +644,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShipController
   thrustForce: 15
-  rotationSpeed: 200
+  rotationSpeed: 20
   brakePower: 2
+  thrustAlignmentThreshold: 0.8
 --- !u!54 &1071541468
 Rigidbody:
   m_ObjectHideFlags: 0

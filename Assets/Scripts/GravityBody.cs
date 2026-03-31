@@ -22,7 +22,15 @@ public class GravityBody : MonoBehaviour
     {
         G = globalGravity;
     }
-    public Rigidbody rb { get; private set; }
+    public Rigidbody rb 
+    { 
+        get 
+        {
+            if (_rb == null) _rb = GetComponent<Rigidbody>();
+            return _rb;
+        }
+    }
+    private Rigidbody _rb;
 
     // Triggered automatically when added in the Unity Editor
     void Reset() => ConfigureRigidbody();
@@ -32,42 +40,58 @@ public class GravityBody : MonoBehaviour
 
     void ConfigureRigidbody()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.useGravity = false;
+        _rb = GetComponent<Rigidbody>();
+        if (_rb == null) return;
+        
+        _rb.useGravity = false;
         // Lock to 2.5D plane
-        rb.constraints = RigidbodyConstraints.FreezePositionZ | 
+        _rb.constraints = RigidbodyConstraints.FreezePositionZ | 
                          RigidbodyConstraints.FreezeRotationX | 
                          RigidbodyConstraints.FreezeRotationY;
     }
 
-    void OnEnable() => allBodies.Add(this);
+    void OnEnable() 
+    {
+        if (!allBodies.Contains(this)) allBodies.Add(this);
+    }
     void OnDisable() => allBodies.Remove(this);
+
+    [Header("Optimization")]
+    public static float maxInfluenceDistance = 100f; 
+    public static float minForceDistance = 1.0f;    
 
     void FixedUpdate()
     {
-        if (!isAttractee) return;
+        if (!isAttractee || rb == null) return;
+
+        // Apply acceleration directly: Force = m * a  =>  a = F / m
+        // Our GetGravityAccelerationAtPoint already returns (G * m_other / r)
+        Vector3 gravityAcceleration = GetGravityAccelerationAtPoint(rb.position, this);
+        rb.AddForce(gravityAcceleration, ForceMode.Acceleration);
+    }
+
+    /// <summary>
+    /// Calculates the acceleration caused by gravity at a specific point.
+    /// Formula: a = G * m_attractor / r
+    /// </summary>
+    public static Vector3 GetGravityAccelerationAtPoint(Vector3 position, GravityBody ignoreBody = null)
+    {
+        Vector3 totalAcceleration = Vector3.zero;
 
         foreach (var body in allBodies)
         {
-            // If the other body is an attractor and not myself, it pulls me
-            if (body != this && body.isAttractor) 
-            {
-                body.Attract(this);
-            }
+            if (body == null || body == ignoreBody || !body.isAttractor || body.rb == null) continue;
+
+            Vector3 direction = body.rb.position - position;
+            float distance = direction.magnitude;
+
+            if (distance == 0f || distance > maxInfluenceDistance) continue;
+
+            // Linear Acceleration: a = G * m_attractor / r
+            float accelerationMagnitude = G * body.rb.mass / Mathf.Max(distance, minForceDistance);
+            totalAcceleration += direction.normalized * accelerationMagnitude;
         }
-    }
 
-    public void Attract(GravityBody objToAttract)
-    {
-        Rigidbody rbToAttract = objToAttract.rb;
-        Vector3 direction = rb.position - rbToAttract.position;
-        float distance = direction.magnitude;
-
-        if (distance == 0f) return;
-
-        float forceMagnitude = G * (rb.mass * rbToAttract.mass) / Mathf.Pow(distance, 2);
-        Vector3 force = direction.normalized * forceMagnitude;
-
-        rbToAttract.AddForce(force);
+        return totalAcceleration;
     }
 }
