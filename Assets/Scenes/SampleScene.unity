@@ -165,7 +165,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AsteroidManager
   asteroidPrefab: {fileID: 6894702072479771844, guid: 402ff4d12ad874cbfb5aaf38eb0f29b6, type: 3}
   player: {fileID: 1071541465}
-  targetAsteroidCount: 0
+  targetAsteroidCount: 30
   spawnRadius: 30
   despawnRadius: 100
 --- !u!1 &330585543
@@ -320,7 +320,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
   player: {fileID: 1071541465}
   offset: {x: 0, y: 0, z: -50}
-  minZoom: 5
+  minZoom: 10
   maxZoom: 100
   zoomSpeed: 100
   maxPlayerSpeed: 100
@@ -597,7 +597,7 @@ GameObject:
   - component: {fileID: 708554144}
   m_Layer: 0
   m_Name: Sphere (1)
-  m_TagString: Untagged
+  m_TagString: Asteroid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -640,7 +640,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 708554142}
   serializedVersion: 5
-  m_Mass: 500
+  m_Mass: 40
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1193,7 +1193,7 @@ GameObject:
   - component: {fileID: 1749815245}
   m_Layer: 0
   m_Name: Sphere (2)
-  m_TagString: Untagged
+  m_TagString: Asteroid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1236,7 +1236,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1749815243}
   serializedVersion: 5
-  m_Mass: 300
+  m_Mass: 60
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1349,7 +1349,7 @@ GameObject:
   - component: {fileID: 1960252690}
   m_Layer: 0
   m_Name: Sphere
-  m_TagString: Untagged
+  m_TagString: Asteroid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -57,8 +57,13 @@ public class GravityBody : MonoBehaviour
     void OnDisable() => allBodies.Remove(this);
 
     [Header("Optimization")]
-    public static float maxInfluenceDistance = 100f; 
+    public float influenceRadiusMultiplier = 5f; 
     public static float minForceDistance = 1.0f;    
+
+    public float influenceRadius
+    {
+        get { return rb != null ? rb.mass * influenceRadiusMultiplier : 0f; }
+    }
 
     void FixedUpdate()
     {
@@ -85,7 +90,7 @@ public class GravityBody : MonoBehaviour
             Vector3 direction = body.rb.position - position;
             float distance = direction.magnitude;
 
-            if (distance == 0f || distance > maxInfluenceDistance) continue;
+            if (distance == 0f || distance > body.influenceRadius) continue;
 
             // Linear Acceleration: a = G * m_attractor / r
             float accelerationMagnitude = G * body.rb.mass / Mathf.Max(distance, minForceDistance);

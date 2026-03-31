@@ -14,9 +14,10 @@ GameObject:
   - component: {fileID: 8302329715757533673}
   - component: {fileID: 8320121739416993557}
   - component: {fileID: 1182723340824398329}
+  - component: {fileID: -1733248559351422347}
   m_Layer: 0
   m_Name: Asteroid
-  m_TagString: Untagged
+  m_TagString: Asteroid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -156,3 +157,22 @@ MonoBehaviour:
   isAttractor: 1
   isAttractee: 0
   globalGravity: 10
+--- !u!114 &-1733248559351422347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6894702072479771844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 629dac44151fd4b3b82b2561504dd67b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AsteroidProperties
+  minSize: 0.5
+  maxSize: 3
+  massMultiplier: 0.2
+  minInitialVelocity: 0.2
+  maxInitialVelocity: 2
+  minAngularVelocity: 2
+  maxAngularVelocity: 10

@@ -67,7 +67,7 @@ public class TrajectoryPredictor : MonoBehaviour
                 Collider[] hits = Physics.OverlapSphere(virtualPlayerPos, predictionRadius);
                 foreach (var hit in hits)
                 {
-                    if (hit.gameObject != gameObject && hit.GetComponent<AsteroidProperties>() != null)
+                    if (hit.gameObject != gameObject && hit.CompareTag("Asteroid"))
                     {
                         pathCollisionDetected = true;
                         // Shorten the line to the point of collision for visual feedback
@@ -87,7 +87,7 @@ public class TrajectoryPredictor : MonoBehaviour
                 Vector3 dir = vBody.position - virtualPlayerPos;
                 float dist = dir.magnitude;
 
-                if (dist > 0.01f && dist < GravityBody.maxInfluenceDistance)
+                if (dist > 0.01f && dist < vBody.body.influenceRadius)
                 {
                     // Acceleration: a = G * m_other / r
                     float accelMag = GravityBody.G * vBody.body.rb.mass / Mathf.Max(dist, GravityBody.minForceDistance);

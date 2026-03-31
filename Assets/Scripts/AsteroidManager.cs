@@ -46,6 +46,7 @@ public class AsteroidManager : MonoBehaviour
         
         // Instantiate and set parent to this manager's transform in one line
         GameObject newAsteroid = Instantiate(asteroidPrefab, spawnPos, Quaternion.identity, transform);
+        newAsteroid.tag = "Asteroid";
         activeAsteroids.Add(newAsteroid);
     }
 }
