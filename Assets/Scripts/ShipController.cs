@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(GravityBody))]
+[RequireComponent(typeof(PlayerHealth))]
 public class ShipController : MonoBehaviour
 {
     [Header("Movement Settings")]
