@@ -6,8 +6,11 @@ public class TrajectoryPredictor : MonoBehaviour
 {
     public int predictionSteps = 50;   // How far the line goes
     public float stepTime = 0.1f;      // Precision of the line
+    public float predictionRadius = 0.8f; // Estimated width of the ship for collision checking
+    public bool pathCollisionDetected { get; private set; }
+
     private LineRenderer line;
-    private ShipController ship;       // To get current velocity
+    private ShipController ship;       
     private Rigidbody rb;
 
     void Awake()
@@ -32,6 +35,7 @@ public class TrajectoryPredictor : MonoBehaviour
     void DrawProjection()
     {
         line.positionCount = predictionSteps;
+        pathCollisionDetected = false;
         
         Vector3 virtualPlayerPos = transform.position;
         Vector3 virtualPlayerVel = rb.linearVelocity;
@@ -40,7 +44,7 @@ public class TrajectoryPredictor : MonoBehaviour
         List<VirtualBody> virtualAttractors = new List<VirtualBody>();
         foreach (var body in GravityBody.allBodies)
         {
-            if (body.gameObject == gameObject || !body.isAttractor) continue;
+            if (body == null || body.gameObject == gameObject || !body.isAttractor) continue;
             
             virtualAttractors.Add(new VirtualBody {
                 body = body,
@@ -55,6 +59,26 @@ public class TrajectoryPredictor : MonoBehaviour
             if (!float.IsFinite(virtualPlayerPos.x) || !float.IsFinite(virtualPlayerPos.y)) break;
 
             line.SetPosition(i, virtualPlayerPos);
+
+            // D. Casting: Check if any part of the predicted path intersects with an asteroid
+            if (!pathCollisionDetected)
+            {
+                // Check if the ship's volume (sphere) at this virtual point hits something
+                Collider[] hits = Physics.OverlapSphere(virtualPlayerPos, predictionRadius);
+                foreach (var hit in hits)
+                {
+                    if (hit.gameObject != gameObject && hit.GetComponent<AsteroidProperties>() != null)
+                    {
+                        pathCollisionDetected = true;
+                        // Shorten the line to the point of collision for visual feedback
+                        line.positionCount = i + 1;
+                        break; // Break the foreach
+                    }
+                }
+
+                // If we just detected a collision, stop the main simulation loop here
+                if (pathCollisionDetected) break; 
+            }
 
             // 1. Calculate gravity acceleration from all virtual attractors
             Vector3 totalGravityAccel = Vector3.zero;
@@ -75,12 +99,12 @@ public class TrajectoryPredictor : MonoBehaviour
             virtualPlayerVel += totalGravityAccel * stepTime;
             virtualPlayerPos += virtualPlayerVel * stepTime;
 
-            // 3. Update virtual attractor positions (move them forward linearly based on their velocity)
+            // 3. Update virtual attractor positions (linear drift)
             for (int j = 0; j < virtualAttractors.Count; j++)
             {
                 var vBody = virtualAttractors[j];
                 vBody.position += vBody.velocity * stepTime;
-                virtualAttractors[j] = vBody; // Update struct in list
+                virtualAttractors[j] = vBody; 
             }
         }
     }

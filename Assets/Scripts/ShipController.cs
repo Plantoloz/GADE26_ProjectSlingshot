@@ -12,13 +12,22 @@ public class ShipController : MonoBehaviour
     public float brakePower = 2f;
     [Range(0, 1)]
     public float thrustAlignmentThreshold = 0.8f; // How aligned we must be to thrust at 100%
+
+    [Header("Proximity Sensor (Casting)")]
+    public float shipRadius = 1.5f;   // Radius for immediate vicinity check
+    public Color sensorSafeColor = Color.green;
+    public Color sensorDangerColor = Color.red;
+    public Light sensorLight; 
+    public float blinkSpeed = 15f;
     
     private Rigidbody rb;
     private Vector2 currentInput;
+    private TrajectoryPredictor trajectory;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        trajectory = GetComponent<TrajectoryPredictor>();
         rb.angularVelocity = Vector3.zero;
 
         // Configure gravity for the player
@@ -37,6 +46,9 @@ public class ShipController : MonoBehaviour
 
     void FixedUpdate()
     {
+        // D. Perform proximity scan (Radius + Path check)
+        PerformProximityScan();
+
         bool isProvidingInput = currentInput.sqrMagnitude > 0.01f;
 
         if (isProvidingInput)
@@ -61,6 +73,46 @@ public class ShipController : MonoBehaviour
                 rb.AddForce(transform.up * thrustForce * thrustMultiplier);
             }
         }
-        // No else block with braking - we want to drift like in Outer Wilds!
+    }
+
+    void PerformProximityScan()
+    {
+        bool isImmediateDanger = false;
+        bool isPathDanger = (trajectory != null && trajectory.pathCollisionDetected);
+
+        // 1. Check small radius around the ship (Immediate Danger)
+        Collider[] nearby = Physics.OverlapSphere(transform.position, shipRadius);
+        foreach (var col in nearby)
+        {
+            if (col.gameObject != gameObject && col.GetComponent<AsteroidProperties>() != null)
+            {
+                isImmediateDanger = true;
+                break;
+            }
+        }
+
+        // 2. Visual Feedback
+        if (sensorLight != null)
+        {
+            if (isImmediateDanger || isPathDanger)
+            {
+                // Blink Red (Urgent)
+                float speed = isImmediateDanger ? blinkSpeed * 2f : blinkSpeed; // Double speed if it's right next to us
+                float blink = (Mathf.Sin(Time.time * speed) + 1f) / 2f;
+                sensorLight.color = Color.Lerp(Color.black, sensorDangerColor, blink);
+            }
+            else
+            {
+                // Solid Green (Clear)
+                sensorLight.color = sensorSafeColor;
+            }
+        }
+    }
+
+    // Draw the sensor radius in the Editor for debugging
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, shipRadius);
     }
 }
