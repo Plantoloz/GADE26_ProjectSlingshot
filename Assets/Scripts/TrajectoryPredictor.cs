@@ -34,15 +34,15 @@ public class TrajectoryPredictor : MonoBehaviour
 
             // Calculate gravity from all active attractors at this virtual point
             Vector3 totalGravity = Vector3.zero;
-            foreach (var attractor in GravityBody.attractors)
+            foreach (var body in GravityBody.allBodies)
             {
-                if (attractor.gameObject == gameObject) continue;
+                if (body.gameObject == gameObject || !body.isAttractor) continue;
 
-                Vector3 dir = attractor.rb.position - virtualPos;
+                Vector3 dir = body.rb.position - virtualPos;
                 float distSq = dir.sqrMagnitude;
                 if (distSq > 0.1f) // Avoid division by zero
                 {
-                    float force = GravityBody.G * (rb.mass * attractor.rb.mass) / distSq;
+                    float force = GravityBody.G * (rb.mass * body.rb.mass) / distSq;
                     totalGravity += dir.normalized * (force / rb.mass);
                 }
             }

@@ -4,7 +4,12 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class GravityBody : MonoBehaviour
 {
-    public static List<GravityBody> attractors = new List<GravityBody>();
+    public static List<GravityBody> allBodies = new List<GravityBody>();
+    
+    [Header("Gravity Settings")]
+    public bool isAttractor = true;
+    public bool isAttractee = false;
+
     // 1. The actual shared constant used in calculations
     public static float G = 10f; 
 
@@ -35,18 +40,24 @@ public class GravityBody : MonoBehaviour
                          RigidbodyConstraints.FreezeRotationY;
     }
 
-    void OnEnable() => attractors.Add(this);
-    void OnDisable() => attractors.Remove(this);
+    void OnEnable() => allBodies.Add(this);
+    void OnDisable() => allBodies.Remove(this);
 
     void FixedUpdate()
     {
-        foreach (var attractor in attractors)
+        if (!isAttractee) return;
+
+        foreach (var body in allBodies)
         {
-            if (attractor != this) Attract(attractor);
+            // If the other body is an attractor and not myself, it pulls me
+            if (body != this && body.isAttractor) 
+            {
+                body.Attract(this);
+            }
         }
     }
 
-    void Attract(GravityBody objToAttract)
+    public void Attract(GravityBody objToAttract)
     {
         Rigidbody rbToAttract = objToAttract.rb;
         Vector3 direction = rb.position - rbToAttract.position;

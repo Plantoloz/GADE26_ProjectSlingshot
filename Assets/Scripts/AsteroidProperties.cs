@@ -5,6 +5,10 @@ public class AsteroidProperties : MonoBehaviour
     public float minSize = 0.5f;
     public float maxSize = 3.0f;
     public float massMultiplier = 2.0f; // Adjust how heavy they are relative to size
+    
+    [Header("Initial Motion")]
+    public float minInitialVelocity = 1f;
+    public float maxInitialVelocity = 5f;
 
     void Start()
     {
@@ -13,10 +17,13 @@ public class AsteroidProperties : MonoBehaviour
         transform.localScale = Vector3.one * randomScale;
 
         // 2. Correlate Mass to Size
-        // In 3D, mass is volume-based (scale^3), but for 2.5D gameplay, 
-        // scale^2 or a linear scale often feels better for balance.
         Rigidbody rb = GetComponent<Rigidbody>();
         rb.mass = randomScale * massMultiplier;
+
+        // 3. Set Initial Velocity
+        Vector2 randomDir = Random.insideUnitCircle.normalized;
+        float randomSpeed = Random.Range(minInitialVelocity, maxInitialVelocity);
+        rb.linearVelocity = new Vector3(randomDir.x, randomDir.y, 0) * randomSpeed;
 
         // Optional: Randomize initial rotation for visual variety
         // Randomize color slightly to distinguish between different "densities"

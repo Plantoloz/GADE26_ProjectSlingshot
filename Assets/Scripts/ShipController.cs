@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(GravityBody))]
 public class ShipController : MonoBehaviour
 {
     public float thrustForce = 15f;
@@ -16,6 +17,14 @@ public class ShipController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         // Ensure angular drag doesn't fight our manual rotation
         rb.angularVelocity = Vector3.zero;
+
+        // Configure gravity for the player: attracted by others, doesn't attract them
+        GravityBody gb = GetComponent<GravityBody>();
+        if (gb != null)
+        {
+            gb.isAttractor = false;
+            gb.isAttractee = true;
+        }
     }
 
     void OnMove(InputValue value)
