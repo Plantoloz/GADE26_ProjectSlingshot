@@ -153,4 +153,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a7b0d7ad71ae46fa804ae0e9b18afed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
+  isAttractor: 1
+  isAttractee: 0
   globalGravity: 10
