@@ -84,7 +84,7 @@ public class ShipController : MonoBehaviour
         Collider[] nearby = Physics.OverlapSphere(transform.position, shipRadius);
         foreach (var col in nearby)
         {
-            if (col.gameObject != gameObject && col.GetComponent<AsteroidProperties>() != null)
+            if (col.gameObject != gameObject && col.CompareTag("Asteroid"))
             {
                 isImmediateDanger = true;
                 break;
