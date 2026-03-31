@@ -171,6 +171,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AsteroidProperties
   minSize: 0.5
   maxSize: 3
-  massMultiplier: 2
-  minInitialVelocity: 1
-  maxInitialVelocity: 5
+  massMultiplier: 0.2
+  minInitialVelocity: 0.2
+  maxInitialVelocity: 2
+  minAngularVelocity: 2
+  maxAngularVelocity: 10

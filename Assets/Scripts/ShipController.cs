@@ -46,24 +46,20 @@ public class ShipController : MonoBehaviour
             
             // Smoothly rotate towards the target
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
+            
+            // Instantly kill angular momentum while steering to keep it precise
+            rb.angularVelocity = Vector3.zero;
 
             // 2. THRUST: Only thrust if we are somewhat aligned with our target direction
-            // Calculate alignment (dot product of current up vs target direction)
             Vector3 targetDir = new Vector3(currentInput.x, currentInput.y, 0).normalized;
             float alignment = Vector3.Dot(transform.up, targetDir);
 
             if (alignment > 0)
             {
-                // Scale thrust based on alignment (only full power when facing the right way)
                 float thrustMultiplier = Mathf.Clamp01((alignment - thrustAlignmentThreshold) / (1f - thrustAlignmentThreshold));
                 rb.AddForce(transform.up * thrustForce * thrustMultiplier);
             }
         }
-        else
-        {
-            // 3. BRAKING: Slow down when no input is provided
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, Time.fixedDeltaTime * brakePower);
-            rb.angularVelocity = Vector3.zero;
-        }
+        // No else block with braking - we want to drift like in Outer Wilds!
     }
 }
