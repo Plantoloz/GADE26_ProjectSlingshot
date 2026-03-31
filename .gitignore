@@ -82,3 +82,6 @@ crashlytics-build.properties
 
 # JetBrains Rider
 .idea/
+
+# Recordings
+/Recordings/
