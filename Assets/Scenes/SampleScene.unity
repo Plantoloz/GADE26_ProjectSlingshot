@@ -611,7 +611,7 @@ Transform:
   m_GameObject: {fileID: 708554142}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -56.300003, y: 98, z: 0}
+  m_LocalPosition: {x: -105, y: 104, z: 0}
   m_LocalScale: {x: 15, y: 15, z: 15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -629,6 +629,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a7b0d7ad71ae46fa804ae0e9b18afed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
+  isAttractor: 1
+  isAttractee: 0
   globalGravity: 10
 --- !u!54 &708554145
 Rigidbody:
@@ -936,7 +938,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: [{fileID: 428776926}]
+  m_Children:
+  - {fileID: 428776926}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1071541466
@@ -1204,7 +1207,7 @@ Transform:
   m_GameObject: {fileID: 1749815243}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11, y: 149.7, z: 0}
+  m_LocalPosition: {x: 32, y: 308, z: 0}
   m_LocalScale: {x: 12, y: 12, z: 12}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1222,6 +1225,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a7b0d7ad71ae46fa804ae0e9b18afed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
+  isAttractor: 1
+  isAttractee: 0
   globalGravity: 10
 --- !u!54 &1749815246
 Rigidbody:
@@ -1358,7 +1363,7 @@ Transform:
   m_GameObject: {fileID: 1960252685}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 25.1, y: 50.5, z: 0}
+  m_LocalPosition: {x: 96, y: 49, z: 0}
   m_LocalScale: {x: 10, y: 10, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1454,6 +1459,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a7b0d7ad71ae46fa804ae0e9b18afed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
+  isAttractor: 1
+  isAttractee: 0
   globalGravity: 10
 --- !u!54 &1960252691
 Rigidbody:
