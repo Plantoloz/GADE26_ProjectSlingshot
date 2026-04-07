@@ -12,6 +12,10 @@ public class GravityBody : MonoBehaviour
 
     public static float GRAVITY_CONSTANT = 10f; 
 
+    [Header("Optimization")]
+    public float influenceRadiusMultiplier = 5f; 
+    public static float minForceDistance = 1.0f; 
+    
     public Rigidbody rb 
     { 
         get 
@@ -46,9 +50,14 @@ public class GravityBody : MonoBehaviour
     }
     void OnDisable() => allBodies.Remove(this);
 
-    [Header("Optimization")]
-    public float influenceRadiusMultiplier = 5f; 
-    public static float minForceDistance = 1.0f;    
+    void OnDrawGizmosSelected()
+    {
+        if (!isAttractor) return;
+        Gizmos.color = new Color(0f, 1f, 0.5f, 0.3f);
+        Gizmos.DrawSphere(transform.position, influenceRadius);
+        Gizmos.color = new Color(0f, 1f, 0.5f, 1f);
+        Gizmos.DrawWireSphere(transform.position, influenceRadius);
+    }
 
     public float influenceRadius
     {
@@ -67,7 +76,7 @@ public class GravityBody : MonoBehaviour
 
     /// <summary>
     /// Calculates the acceleration caused by gravity at a specific point.
-    /// Formula: a = G * m_attractor / r
+    /// Formula: a = G * m_attractor / r²
     /// </summary>
     public static Vector3 GetGravityAccelerationAtPoint(Vector3 position, GravityBody ignoreBody = null)
     {
@@ -83,7 +92,10 @@ public class GravityBody : MonoBehaviour
             if (distance == 0f || distance > body.influenceRadius) continue;
 
             // Linear Acceleration: a = G * m_attractor / r
-            float accelerationMagnitude = GRAVITY_CONSTANT * body.rb.mass / Mathf.Max(distance, minForceDistance);
+            // float accelerationMagnitude = GRAVITY_CONSTANT * body.rb.mass / Mathf.Max(distance, minForceDistance);
+            
+            // Inverse-Square Acceleration: a = G * m_attractor / r²
+            float accelerationMagnitude = GRAVITY_CONSTANT * body.rb.mass / Mathf.Pow(Mathf.Max(distance, minForceDistance), 2f);
             totalAcceleration += direction.normalized * accelerationMagnitude;
         }
 

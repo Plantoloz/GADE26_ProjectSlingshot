@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -23,11 +24,14 @@ public class ShipController : MonoBehaviour
     private Rigidbody rb;
     private Vector2 currentInput;
     private TrajectoryPredictor trajectory;
+    private CameraFollow cameraFollow;
+    private readonly HashSet<Transform> overlappingPlanets = new HashSet<Transform>();
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         trajectory = GetComponent<TrajectoryPredictor>();
+        cameraFollow = FindFirstObjectByType<CameraFollow>();
         rb.angularVelocity = Vector3.zero;
 
         // Configure gravity for the player
@@ -107,6 +111,36 @@ public class ShipController : MonoBehaviour
                 sensorLight.color = sensorSafeColor;
             }
         }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Planet"))
+            overlappingPlanets.Add(other.transform.parent);
+        UpdateCameraFocus();
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Planet"))
+            overlappingPlanets.Remove(other.transform.parent);
+        UpdateCameraFocus();
+    }
+
+    void UpdateCameraFocus()
+    {
+        if (cameraFollow == null) return;
+
+        Transform nearest = null;
+        float minDist = float.MaxValue;
+        foreach (var planet in overlappingPlanets)
+        {
+            float dist = Vector3.Distance(transform.position, planet.position);
+            if (dist < minDist) { minDist = dist; nearest = planet; }
+        }
+
+        if (nearest != null) cameraFollow.SetFocusPlanet(nearest);
+        else                  cameraFollow.ClearFocusPlanet();
     }
 
     // Draw the sensor radius in the Editor for debugging

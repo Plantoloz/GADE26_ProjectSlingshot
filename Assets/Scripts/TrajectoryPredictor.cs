@@ -89,8 +89,8 @@ public class TrajectoryPredictor : MonoBehaviour
 
                 if (dist > 0.01f && dist < vBody.body.influenceRadius)
                 {
-                    // Acceleration: a = G * m_other / r
-                    float accelMag = GravityBody.GRAVITY_CONSTANT * vBody.body.rb.mass / Mathf.Max(dist, GravityBody.minForceDistance);
+                    // Inverse-Square Acceleration: a = G * m_other / r²
+                    float accelMag = GravityBody.GRAVITY_CONSTANT * vBody.body.rb.mass / Mathf.Pow(Mathf.Max(dist, GravityBody.minForceDistance), 2f);
                     totalGravityAccel += dir.normalized * accelMag;
                 }
             }
