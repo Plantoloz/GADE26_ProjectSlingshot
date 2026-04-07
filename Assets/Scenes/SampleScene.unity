@@ -165,9 +165,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AsteroidManager
   asteroidPrefab: {fileID: 6894702072479771844, guid: 402ff4d12ad874cbfb5aaf38eb0f29b6, type: 3}
   player: {fileID: 1071541465}
-  targetAsteroidCount: 30
-  spawnRadius: 30
-  despawnRadius: 100
+  mapPath: {fileID: 1369393012}
+  noiseScale: 0.05
+  noiseThreshold: 0.1
+  cellSize: 8
+  viewDistance: 60
+  positionJitter: 3
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -629,9 +632,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a7b0d7ad71ae46fa804ae0e9b18afed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
-  isAttractor: 1
+  isAttractor: 0
   isAttractee: 0
-  globalGravity: 10
+  influenceRadiusMultiplier: 5
 --- !u!54 &708554145
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -956,7 +959,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
   isAttractor: 1
   isAttractee: 1
-  globalGravity: 10
+  influenceRadiusMultiplier: 5
 --- !u!114 &1071541467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1177,6 +1180,55 @@ MonoBehaviour:
   healthSlider: {fileID: 0}
   minImpactForce: 2
   damageMultiplier: 5
+--- !u!1 &1369393011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1369393013}
+  - component: {fileID: 1369393012}
+  m_Layer: 0
+  m_Name: PathPoint1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1369393012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1369393011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3348527261aa944cdb26ad01ec206067, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapPath
+  points:
+  - {x: 0, y: 0, z: 0}
+  - {x: 100, y: 0, z: 0}
+  pathWidth: 10
+  pathColor: {r: 0, g: 1, b: 1, a: 1}
+--- !u!4 &1369393013
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1369393011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1749815243
 GameObject:
   m_ObjectHideFlags: 0
@@ -1225,9 +1277,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a7b0d7ad71ae46fa804ae0e9b18afed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
-  isAttractor: 1
+  isAttractor: 0
   isAttractee: 0
-  globalGravity: 10
+  influenceRadiusMultiplier: 5
 --- !u!54 &1749815246
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1459,9 +1511,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a7b0d7ad71ae46fa804ae0e9b18afed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityBody
-  isAttractor: 1
+  isAttractor: 0
   isAttractee: 0
-  globalGravity: 10
+  influenceRadiusMultiplier: 5
 --- !u!54 &1960252691
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1499,3 +1551,4 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 169612366}
   - {fileID: 780336987}
+  - {fileID: 1369393013}

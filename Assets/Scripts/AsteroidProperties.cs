@@ -12,28 +12,28 @@ public class AsteroidProperties : MonoBehaviour
     public float minAngularVelocity = 5f;  // Deg/s
     public float maxAngularVelocity = 30f; // Deg/s
 
+    private bool wasInitialized = false;
+
     void Start()
     {
-        InitializeAsteroid();
-
-        // Randomize color slightly
-        Renderer renderer = GetComponent<Renderer>();
-        if (renderer != null) renderer.material.color *= Random.Range(0.8f, 1.2f);
-        
-        // Random initial static rotation
-        transform.rotation = Quaternion.Euler(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
+        if (!wasInitialized)
+        {
+            // If not initialized by the manager (e.g. placed manually), use a random seed
+            InitializeWithSeed(Random.Range(-100000, 100000));
+        }
     }
 
-    // Allows you to see changes immediately when tweaking in the Inspector
-    void OnValidate()
+    /// <summary>
+    /// Deterministically initializes the asteroid based on a seed.
+    /// This ensures that an asteroid at a specific location always looks and behaves the same.
+    /// </summary>
+    public void InitializeWithSeed(int seed)
     {
-        if (Application.isPlaying) SyncMass();
-    }
+        wasInitialized = true;
+        System.Random prng = new System.Random(seed);
 
-    void InitializeAsteroid()
-    {
-        // 1. Generate a random scale
-        float randomScale = Random.Range(minSize, maxSize);
+        // 1. Generate a scale
+        float randomScale = (float)(prng.NextDouble() * (maxSize - minSize) + minSize);
         transform.localScale = Vector3.one * randomScale;
 
         // 2. Set Initial Motion
@@ -41,17 +41,32 @@ public class AsteroidProperties : MonoBehaviour
         if (rb != null)
         {
             // Linear Velocity
-            Vector2 randomDir = Random.insideUnitCircle.normalized;
-            float randomSpeed = Random.Range(minInitialVelocity, maxInitialVelocity);
+            float angle = (float)(prng.NextDouble() * Mathf.PI * 2);
+            Vector2 randomDir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+            float randomSpeed = (float)(prng.NextDouble() * (maxInitialVelocity - minInitialVelocity) + minInitialVelocity);
             rb.linearVelocity = new Vector3(randomDir.x, randomDir.y, 0) * randomSpeed;
             
-            // Angular Velocity (Continuous spin)
-            float randomSpin = Random.Range(minAngularVelocity, maxAngularVelocity);
-            if (Random.value > 0.5f) randomSpin *= -1f;
+            // Angular Velocity
+            float randomSpin = (float)(prng.NextDouble() * (maxAngularVelocity - minAngularVelocity) + minAngularVelocity);
+            if (prng.NextDouble() > 0.5) randomSpin *= -1f;
             rb.angularVelocity = new Vector3(0, 0, randomSpin * Mathf.Deg2Rad);
 
             SyncMass();
         }
+
+        // 3. Visuals
+        Renderer renderer = GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            float colorMultiplier = (float)(prng.NextDouble() * 0.4 + 0.8); // 0.8 to 1.2
+            renderer.material.color *= colorMultiplier;
+        }
+        
+        // Random initial static rotation
+        float rotX = (float)(prng.NextDouble() * 360);
+        float rotY = (float)(prng.NextDouble() * 360);
+        float rotZ = (float)(prng.NextDouble() * 360);
+        transform.rotation = Quaternion.Euler(rotX, rotY, rotZ);
     }
 
     public void SyncMass()
