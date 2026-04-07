@@ -15,7 +15,7 @@
               float r = toBody.magnitude;                                                                                                                                            
                                                                                                                                                                                      
               // Kreisbahngeschwindigkeit
-              float speed = Mathf.Sqrt(GravityBody.G * sun.rb.mass / r);                                                                                                             
+              float speed = Mathf.Sqrt(GravityBody.GRAVITY_CONSTANT * sun.rb.mass / r);                                                                                                             
                                                                                                                                                                                      
               // Senkrecht zur Verbindungslinie (im 2D-XY-Plane)                                                                                                                     
               Vector3 tangent = new Vector3(-toBody.y, toBody.x, 0f).normalized;                                                                                                     

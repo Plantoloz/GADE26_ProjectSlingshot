@@ -10,18 +10,8 @@ public class GravityBody : MonoBehaviour
     public bool isAttractor = true;
     public bool isAttractee = false;
 
-    // 1. The actual shared constant used in calculations
-    public static float G = 10f; 
+    public static float GRAVITY_CONSTANT = 10f; 
 
-    // 2. The variable visible in the Unity Inspector
-    [SerializeField, Tooltip("Changes G for ALL objects simultaneously")] 
-    private float globalGravity = 10f;
-
-    // 3. Automatically syncs the static G when you type a new number in the Editor
-    void OnValidate() 
-    {
-        G = globalGravity;
-    }
     public Rigidbody rb 
     { 
         get 
@@ -93,7 +83,7 @@ public class GravityBody : MonoBehaviour
             if (distance == 0f || distance > body.influenceRadius) continue;
 
             // Linear Acceleration: a = G * m_attractor / r
-            float accelerationMagnitude = G * body.rb.mass / Mathf.Max(distance, minForceDistance);
+            float accelerationMagnitude = GRAVITY_CONSTANT * body.rb.mass / Mathf.Max(distance, minForceDistance);
             totalAcceleration += direction.normalized * accelerationMagnitude;
         }
 
