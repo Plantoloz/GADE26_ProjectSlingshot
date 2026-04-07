@@ -30,10 +30,30 @@ public class Planet : MonoBehaviour
     [Range(8, 256)]
     public int colliderResolution = 64;
 
+    [Header("Rotation")]
+    public Vector3 rotationSpeed = new Vector3(0f, 0f, 10f);
+    public bool randomizeRotation = false;
+    public Vector3 randomRotationMin = new Vector3(0f, 0f, -30f);
+    public Vector3 randomRotationMax = new Vector3(0f, 0f,  30f);
+
     void Start()
     {
         GeneratePlanet();
         UpdateCollider();
+
+        if (randomizeRotation)
+        {
+            rotationSpeed = new Vector3(
+                Random.Range(randomRotationMin.x, randomRotationMax.x),
+                Random.Range(randomRotationMin.y, randomRotationMax.y),
+                Random.Range(randomRotationMin.z, randomRotationMax.z)
+            );
+        }
+    }
+
+    void Update()
+    {
+        transform.Rotate(rotationSpeed * Time.deltaTime);
     }
 
     void UpdateCollider()
