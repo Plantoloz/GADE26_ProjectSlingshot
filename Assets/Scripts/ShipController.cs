@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -25,7 +24,6 @@ public class ShipController : MonoBehaviour
     private Vector2 currentInput;
     private TrajectoryPredictor trajectory;
     private CameraFollow cameraFollow;
-    private readonly HashSet<Transform> overlappingPlanets = new HashSet<Transform>();
 
     void Awake()
     {
@@ -88,7 +86,7 @@ public class ShipController : MonoBehaviour
         Collider[] nearby = Physics.OverlapSphere(transform.position, shipRadius);
         foreach (var col in nearby)
         {
-            if (col.gameObject != gameObject && col.CompareTag("Asteroid"))
+            if (col.gameObject != gameObject && (col.CompareTag("Asteroid") || col.CompareTag("Planet")))
             {
                 isImmediateDanger = true;
                 break;
@@ -115,32 +113,14 @@ public class ShipController : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Planet"))
-            overlappingPlanets.Add(other.transform.parent);
-        UpdateCameraFocus();
+        if (other.CompareTag("CameraTrigger") && cameraFollow != null)
+            cameraFollow.SetFocusPlanet(other.transform.parent);
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Planet"))
-            overlappingPlanets.Remove(other.transform.parent);
-        UpdateCameraFocus();
-    }
-
-    void UpdateCameraFocus()
-    {
-        if (cameraFollow == null) return;
-
-        Transform nearest = null;
-        float minDist = float.MaxValue;
-        foreach (var planet in overlappingPlanets)
-        {
-            float dist = Vector3.Distance(transform.position, planet.position);
-            if (dist < minDist) { minDist = dist; nearest = planet; }
-        }
-
-        if (nearest != null) cameraFollow.SetFocusPlanet(nearest);
-        else                  cameraFollow.ClearFocusPlanet();
+        if (other.CompareTag("CameraTrigger") && cameraFollow != null)
+            cameraFollow.ClearFocusPlanet();
     }
 
     // Draw the sensor radius in the Editor for debugging

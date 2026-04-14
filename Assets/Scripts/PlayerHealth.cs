@@ -26,8 +26,8 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isGameOver) return;
 
-        // Check if we hit an asteroid
-        if (collision.gameObject.CompareTag("Asteroid"))
+        // Check if we hit an asteroid or planet
+        if (collision.gameObject.CompareTag("Asteroid") || collision.gameObject.CompareTag("Planet"))
         {
             // Calculate damage based on the impact force
             float impactForce = collision.relativeVelocity.magnitude;
