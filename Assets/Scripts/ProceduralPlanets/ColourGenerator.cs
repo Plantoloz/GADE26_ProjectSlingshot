@@ -6,13 +6,20 @@ public class ColourGenerator
 {
 
     ColourSettings settings;
+    Material material;
     Texture2D texture;
     const int textureResolution = 50;
     INoiseFilter biomeNoiseFilter;
 
     public void UpdateSettings(ColourSettings settings)
     {
+        bool needsNewMaterial = this.settings == null || material == null ||
+                                this.settings.planetMaterial != settings.planetMaterial;
         this.settings = settings;
+        if (needsNewMaterial)
+        {
+            material = new Material(settings.planetMaterial);
+        }
         if (texture == null || texture.height != settings.biomeColourSettings.biomes.Length)
         {
             texture = new Texture2D(textureResolution*2, settings.biomeColourSettings.biomes.Length, TextureFormat.RGBA32, false);
@@ -20,9 +27,14 @@ public class ColourGenerator
         biomeNoiseFilter = NoiseFilterFactory.CreateNoiseFilter(settings.biomeColourSettings.noise);
     }
 
+    public Material GetMaterial()
+    {
+        return material;
+    }
+
     public void UpdateElevation(MinMax elevationMinMax)
     {
-        settings.planetMaterial.SetVector("_elevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
+        material.SetVector("_elevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
     }
 
     public float BiomePercentFromPoint(Vector3 pointOnUnitSphere)
@@ -66,6 +78,6 @@ public class ColourGenerator
         }
         texture.SetPixels(colours);
         texture.Apply();
-        settings.planetMaterial.SetTexture("_texture", texture);
+        material.SetTexture("_texture", texture);
     }
 }

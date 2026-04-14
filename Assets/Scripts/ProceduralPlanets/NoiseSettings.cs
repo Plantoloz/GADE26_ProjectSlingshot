@@ -16,6 +16,7 @@ public class NoiseSettings {
     [System.Serializable]
     public class SimpleNoiseSettings
     {
+        public int seed = 0;
         public float strength = 1;
         [Range(1, 8)]
         public int numLayers = 1;

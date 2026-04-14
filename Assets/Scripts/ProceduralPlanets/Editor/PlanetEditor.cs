@@ -48,6 +48,7 @@ public class PlanetEditor : Editor {
                         {
                             onSettingsUpdated();
                         }
+                        EditorUtility.SetDirty(settings);
                     }
                 }
             }

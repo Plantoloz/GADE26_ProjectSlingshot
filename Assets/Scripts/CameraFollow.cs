@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
@@ -24,7 +25,8 @@ public class CameraFollow : MonoBehaviour
     private Rigidbody playerRb;
     private float currentZoomVelocity;
     private Vector3 followVelocity;
-    private Transform focusPlanet;
+
+    private readonly HashSet<Transform> activePlanets = new HashSet<Transform>();
 
     void Start()
     {
@@ -32,8 +34,24 @@ public class CameraFollow : MonoBehaviour
             playerRb = player.GetComponent<Rigidbody>();
     }
 
-    public void SetFocusPlanet(Transform planet) => focusPlanet = planet;
-    public void ClearFocusPlanet()               => focusPlanet = null;
+    public void RegisterTrigger(Transform planet)   => activePlanets.Add(planet);
+    public void UnregisterTrigger(Transform planet) => activePlanets.Remove(planet);
+
+    Transform ClosestPlanet()
+    {
+        Transform closest = null;
+        float minDist = float.MaxValue;
+        foreach (Transform planet in activePlanets)
+        {
+            float dist = Vector3.Distance(player.position, planet.position);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = planet;
+            }
+        }
+        return closest;
+    }
 
     void LateUpdate()
     {
@@ -42,23 +60,20 @@ public class CameraFollow : MonoBehaviour
         Vector3 targetPosition;
         float targetZoom;
 
+        Transform focusPlanet = activePlanets.Count > 0 ? ClosestPlanet() : null;
+
         if (focusPlanet != null)
         {
             // Frame both ship and planet
             Vector3 midpoint = (player.position + focusPlanet.position) * 0.5f;
             targetPosition = midpoint + offset;
 
-            // Calculate required orthographic size accounting for 16:9 aspect ratio.
-            // orthographicSize = half-height; half-width = orthographicSize * aspectRatio.
-            // We need: halfHeight >= |dy|/2 + planetRadius  AND  halfHeight * aspect >= |dx|/2 + planetRadius
+            // Circular framing: radius = half the ship-planet distance + planet radius.
+            // For orthographic camera in landscape, orthoSize == radius guarantees the
+            // circle fits vertically (and horizontally because width > height).
+            float halfDist = Vector3.Distance(player.position, focusPlanet.position) * 0.5f;
             float planetRadius = focusPlanet.localScale.x * 0.5f;
-            Vector3 delta = focusPlanet.position - player.position;
-            float halfDx = Mathf.Abs(delta.x) * 0.5f + planetRadius;
-            float halfDy = Mathf.Abs(delta.y) * 0.5f + planetRadius;
-            const float aspect = 16f / 9f;
-            float sizeFromHeight = halfDy;
-            float sizeFromWidth  = halfDx / aspect;
-            targetZoom = Mathf.Clamp(Mathf.Max(sizeFromHeight, sizeFromWidth) * focusPadding, minZoom, maxZoom);
+            targetZoom = Mathf.Clamp((halfDist + planetRadius) * focusPadding, minZoom, maxZoom);
         }
         else
         {

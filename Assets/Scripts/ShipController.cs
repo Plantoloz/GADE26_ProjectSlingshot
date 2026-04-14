@@ -15,12 +15,12 @@ public class ShipController : MonoBehaviour
 
     [Header("Proximity Sensor (Casting)")]
     public float shipRadius = 1.5f;   // Radius for immediate vicinity check
-    public Color sensorSafeColor = Color.green;
-    public Color sensorDangerColor = Color.red;
-    public Light sensorLight; 
-    public float blinkSpeed = 15f;
-    
+
+    [Header("Thruster")]
+    public ParticleSystem thruster;
+
     private Rigidbody rb;
+    private Animator sensorAnimator;
     private Vector2 currentInput;
     private TrajectoryPredictor trajectory;
     private CameraFollow cameraFollow;
@@ -28,9 +28,11 @@ public class ShipController : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        sensorAnimator = GetComponent<Animator>();
         trajectory = GetComponent<TrajectoryPredictor>();
         cameraFollow = FindFirstObjectByType<CameraFollow>();
         rb.angularVelocity = Vector3.zero;
+        thruster.Stop();
 
         // Configure gravity for the player
         GravityBody gb = GetComponent<GravityBody>();
@@ -44,6 +46,12 @@ public class ShipController : MonoBehaviour
     void OnMove(InputValue value)
     {
         currentInput = value.Get<Vector2>();
+
+        if (thruster == null) return;
+        if (currentInput.sqrMagnitude > 0.01f)
+            thruster.Play();
+        else
+            thruster.Stop();
     }
 
     void FixedUpdate()
@@ -94,33 +102,26 @@ public class ShipController : MonoBehaviour
         }
 
         // 2. Visual Feedback
-        if (sensorLight != null)
+        if (sensorAnimator != null)
         {
-            if (isImmediateDanger || isPathDanger)
-            {
-                // Blink Red (Urgent)
-                float speed = isImmediateDanger ? blinkSpeed * 2f : blinkSpeed; // Double speed if it's right next to us
-                float blink = (Mathf.Sin(Time.time * speed) + 1f) / 2f;
-                sensorLight.color = Color.Lerp(Color.black, sensorDangerColor, blink);
-            }
-            else
-            {
-                // Solid Green (Clear)
-                sensorLight.color = sensorSafeColor;
-            }
+            int dangerLevel = 0;
+            if (isImmediateDanger)  dangerLevel = 2;
+            else if (isPathDanger)  dangerLevel = 1;
+            sensorAnimator.SetInteger("DangerLevel", dangerLevel);
+            Debug.Log(dangerLevel);
         }
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("CameraTrigger") && cameraFollow != null)
-            cameraFollow.SetFocusPlanet(other.transform.parent);
+            cameraFollow.RegisterTrigger(other.transform.parent);
     }
 
     void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("CameraTrigger") && cameraFollow != null)
-            cameraFollow.ClearFocusPlanet();
+            cameraFollow.UnregisterTrigger(other.transform.parent);
     }
 
     // Draw the sensor radius in the Editor for debugging
