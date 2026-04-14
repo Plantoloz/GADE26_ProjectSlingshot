@@ -85,3 +85,6 @@ crashlytics-build.properties
 
 # Recordings
 /Recordings/
+
+# Recovery Files
+*/_Recovery*
