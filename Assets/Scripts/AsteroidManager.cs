@@ -6,6 +6,7 @@ public class AsteroidManager : MonoBehaviour
     public GameObject asteroidPrefab;
     public Transform player;
     public MapPath mapPath;
+    public bool invertPathMode = false; // If true, asteroids ONLY spawn on tiles. If false, they spawn EVERYWHERE EXCEPT on tiles.
 
     [Header("Noise Map Settings")]
     public float noiseScale = 0.05f;      
@@ -124,7 +125,22 @@ public class AsteroidManager : MonoBehaviour
     {
         float noise = Mathf.PerlinNoise(cell.x * noiseScale + 1000f, cell.y * noiseScale + 1000f);
         if (noise < noiseThreshold) return false;
-        if (mapPath != null && mapPath.IsPositionInsidePath(worldPos)) return false;
+
+        if (mapPath != null)
+        {
+            bool isInside = mapPath.IsPositionInsidePath(worldPos);
+            // If invertPathMode is true, we ONLY spawn INSIDE.
+            // If invertPathMode is false, we ONLY spawn OUTSIDE.
+            if (invertPathMode)
+            {
+                if (!isInside) return false;
+            }
+            else
+            {
+                if (isInside) return false;
+            }
+        }
+
         return true;
     }
 
