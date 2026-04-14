@@ -8,29 +8,27 @@ public class AsteroidManager : MonoBehaviour
     public MapPath mapPath;
 
     [Header("Noise Map Settings")]
-    public float noiseScale = 0.05f;      // How "stretched" the noise is
-    public float noiseThreshold = 0.6f;  // Higher = fewer asteroids (0 to 1)
+    public float noiseScale = 0.05f;      
+    public float noiseThreshold = 0.6f;  
     
     [Header("Grid Settings")]
-    public float cellSize = 8f;          // Size of each potential asteroid "slot"
-    public float viewDistance = 60f;     // How far to spawn/keep asteroids
-    
-    [Header("Visual Randomness")]
-    public float positionJitter = 3f;    // Max offset from cell center
+    public float cellSize = 10f;          
+    public float viewDistance = 100f;     // Visual distance
+    public float physicsRadius = 35f;     // Distance for active physics
+    public float positionJitter = 4f;    
 
     private Dictionary<Vector2Int, GameObject> activeAsteroids = new Dictionary<Vector2Int, GameObject>();
+    private Stack<GameObject> asteroidPool = new Stack<GameObject>();
 
     void Update()
     {
         if (player == null) return;
 
-        // 1. Calculate the range of cells around the player
         Vector2Int playerCell = WorldToCell(player.position);
         int cellRadius = Mathf.CeilToInt(viewDistance / cellSize);
-
         HashSet<Vector2Int> requiredCells = new HashSet<Vector2Int>();
 
-        // 2. Scan for cells that SHOULD have an asteroid
+        // 1. Scan for cells
         for (int x = -cellRadius; x <= cellRadius; x++)
         {
             for (int y = -cellRadius; y <= cellRadius; y++)
@@ -38,8 +36,8 @@ public class AsteroidManager : MonoBehaviour
                 Vector2Int cellCoord = new Vector2Int(playerCell.x + x, playerCell.y + y);
                 Vector3 cellWorldPos = CellToWorld(cellCoord);
 
-                // Check distance
-                if (Vector3.Distance(player.position, cellWorldPos) <= viewDistance)
+                float dist = Vector3.Distance(player.position, cellWorldPos);
+                if (dist <= viewDistance)
                 {
                     if (ShouldSpawnAt(cellCoord, cellWorldPos))
                     {
@@ -49,75 +47,85 @@ public class AsteroidManager : MonoBehaviour
             }
         }
 
-        // 3. Despawn asteroids that are no longer needed
-        List<Vector2Int> toRemove = new List<Vector2Int>();
+        // 2. Despawn/Release to Pool
+        List<Vector2Int> toRelease = new List<Vector2Int>();
         foreach (var entry in activeAsteroids)
         {
             if (!requiredCells.Contains(entry.Key))
             {
-                toRemove.Add(entry.Key);
+                toRelease.Add(entry.Key);
             }
-        }
-
-        foreach (var cell in toRemove)
-        {
-            if (activeAsteroids[cell] != null)
+            else
             {
-                Destroy(activeAsteroids[cell]);
+                // Manage Physics Bubble for still-active asteroids
+                float dist = Vector3.Distance(player.position, entry.Value.transform.position);
+                AsteroidProperties props = entry.Value.GetComponent<AsteroidProperties>();
+                if (props != null)
+                {
+                    props.SetPhysicsActive(dist <= physicsRadius);
+                    props.UpdateManualDrift(Time.deltaTime);
+                }
             }
-            activeAsteroids.Remove(cell);
         }
 
-        // 4. Spawn new asteroids in required cells
+        foreach (var cell in toRelease)
+        {
+            ReleaseToPool(cell);
+        }
+
+        // 3. Get from Pool
         foreach (var cell in requiredCells)
         {
             if (!activeAsteroids.ContainsKey(cell))
             {
-                SpawnAsteroid(cell);
+                SpawnFromPool(cell);
             }
         }
     }
 
-    private bool ShouldSpawnAt(Vector2Int cell, Vector3 worldPos)
+    private void SpawnFromPool(Vector2Int cell)
     {
-        // Use Perlin noise to determine if this cell has an asteroid
-        // We use the cell coordinates to ensure the noise is stable/deterministic
-        float noise = Mathf.PerlinNoise(cell.x * noiseScale + 1000f, cell.y * noiseScale + 1000f);
-        
-        if (noise < noiseThreshold) return false;
-
-        // Still respect the "Empty Path" logic
-        if (mapPath != null && mapPath.IsPositionInsidePath(worldPos))
+        GameObject asteroid;
+        if (asteroidPool.Count > 0)
         {
-            return false;
+            asteroid = asteroidPool.Pop();
+            asteroid.SetActive(true);
+        }
+        else
+        {
+            asteroid = Instantiate(asteroidPrefab, transform);
         }
 
-        return true;
-    }
-
-    private void SpawnAsteroid(Vector2Int cell)
-    {
-        // Use a deterministic seed based on cell coordinates for all "random" properties
-        // This ensures the same asteroid spawns in the same spot with the same size every time
         int seed = cell.x * 73856093 ^ cell.y * 19349663; 
         System.Random prng = new System.Random(seed);
-
-        // Jitter the position within the cell so it doesn't look like a perfect grid
         float offsetX = (float)(prng.NextDouble() * 2 - 1) * positionJitter;
         float offsetY = (float)(prng.NextDouble() * 2 - 1) * positionJitter;
-        Vector3 spawnPos = CellToWorld(cell) + new Vector3(offsetX, offsetY, 0);
+        asteroid.transform.position = CellToWorld(cell) + new Vector3(offsetX, offsetY, 0);
 
-        GameObject newAsteroid = Instantiate(asteroidPrefab, spawnPos, Quaternion.identity, transform);
-        newAsteroid.tag = "Asteroid";
-        
-        // Pass the seed to the asteroid properties so it can randomize itself deterministically
-        AsteroidProperties props = newAsteroid.GetComponent<AsteroidProperties>();
+        AsteroidProperties props = asteroid.GetComponent<AsteroidProperties>();
         if (props != null)
         {
             props.InitializeWithSeed(seed);
+            props.SetPhysicsActive(false); // Start kinematic until physics bubble check
         }
 
-        activeAsteroids.Add(cell, newAsteroid);
+        activeAsteroids.Add(cell, asteroid);
+    }
+
+    private void ReleaseToPool(Vector2Int cell)
+    {
+        GameObject asteroid = activeAsteroids[cell];
+        asteroid.SetActive(false);
+        asteroidPool.Push(asteroid);
+        activeAsteroids.Remove(cell);
+    }
+
+    private bool ShouldSpawnAt(Vector2Int cell, Vector3 worldPos)
+    {
+        float noise = Mathf.PerlinNoise(cell.x * noiseScale + 1000f, cell.y * noiseScale + 1000f);
+        if (noise < noiseThreshold) return false;
+        if (mapPath != null && mapPath.IsPositionInsidePath(worldPos)) return false;
+        return true;
     }
 
     private Vector2Int WorldToCell(Vector3 pos) => new Vector2Int(Mathf.FloorToInt(pos.x / cellSize), Mathf.FloorToInt(pos.y / cellSize));
