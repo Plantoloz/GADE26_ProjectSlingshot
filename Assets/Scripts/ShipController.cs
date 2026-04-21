@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -32,7 +33,7 @@ public class ShipController : MonoBehaviour
         trajectory = GetComponent<TrajectoryPredictor>();
         cameraFollow = FindFirstObjectByType<CameraFollow>();
         rb.angularVelocity = Vector3.zero;
-        thruster.Stop();
+        thruster.Play();
 
         // Configure gravity for the player
         GravityBody gb = GetComponent<GravityBody>();
@@ -41,6 +42,11 @@ public class ShipController : MonoBehaviour
             gb.isAttractor = false;
             gb.isAttractee = true;
         }
+    }
+
+    private void OnEnable()
+    {
+        thruster.Stop();
     }
 
     void OnMove(InputValue value)

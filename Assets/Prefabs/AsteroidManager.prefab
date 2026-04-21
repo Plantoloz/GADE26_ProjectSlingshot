@@ -68,7 +68,7 @@ GameObject:
   - component: {fileID: 3055264141964944177}
   - component: {fileID: 4494461524168169525}
   m_Layer: 0
-  m_Name: AsteroidManager 1
+  m_Name: AsteroidManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
