@@ -27,9 +27,6 @@ public class Planet : MonoBehaviour
     TerrainFace[] terrainFaces;
 
 
-    [Range(8, 256)]
-    public int colliderResolution = 64;
-
     [Header("Rotation")]
     public Vector3 rotationSpeed = new Vector3(0f, 0f, 10f);
     public bool randomizeRotation = false;
@@ -39,7 +36,6 @@ public class Planet : MonoBehaviour
     void Start()
     {
         GeneratePlanet();
-        UpdateCollider();
 
         if (randomizeRotation)
         {
@@ -54,23 +50,6 @@ public class Planet : MonoBehaviour
     void Update()
     {
         transform.Rotate(rotationSpeed * Time.deltaTime);
-    }
-
-    void UpdateCollider()
-    {
-        PolygonCollider2D col = GetComponent<PolygonCollider2D>();
-        if (col == null) col = gameObject.AddComponent<PolygonCollider2D>();
-
-        Vector2[] points = new Vector2[colliderResolution];
-        for (int i = 0; i < colliderResolution; i++)
-        {
-            float angle = (float)i / colliderResolution * Mathf.PI * 2f;
-            Vector3 dir = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f);
-            float elevation = shapeGenerator.CalculateUnscaledElevation(dir);
-            float radius = shapeGenerator.GetScaledElevation(elevation);
-            points[i] = new Vector2(dir.x * radius, dir.y * radius);
-        }
-        col.SetPath(0, points);
     }
 
     void Initialize()

@@ -21,7 +21,7 @@ MonoBehaviour:
       simpleNoiseSettings:
         seed: 0
         strength: 0.07
-        numLayers: 4
+        numLayers: 8
         baseRoughness: 1.07
         roughness: 2.2
         persistence: 0.5
