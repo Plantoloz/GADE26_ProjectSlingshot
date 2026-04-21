@@ -20,6 +20,8 @@ public class ShipController : MonoBehaviour
     [Header("Thruster")]
     public ParticleSystem thruster;
 
+    public bool IsThrusting { get; private set; }
+
     private Rigidbody rb;
     private Animator sensorAnimator;
     private Vector2 currentInput;
@@ -66,6 +68,7 @@ public class ShipController : MonoBehaviour
         PerformProximityScan();
 
         bool isProvidingInput = currentInput.sqrMagnitude > 0.01f;
+        IsThrusting = isProvidingInput;
 
         if (isProvidingInput)
         {

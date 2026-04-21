@@ -8,7 +8,9 @@ public class PlayerHealth : MonoBehaviour
     public float currentHealth;
     
     [Header("UI References")]
-    public Slider healthSlider; // Assign this in the Inspector
+    public Slider healthSlider;
+    public Image healthFill;
+    public Gradient healthGradient;
     
     [Header("Damage Settings")]
     public float minImpactForce = 2f;
@@ -61,6 +63,9 @@ public class PlayerHealth : MonoBehaviour
             healthSlider.maxValue = maxHealth;
             healthSlider.value = currentHealth;
         }
+
+        if (healthFill != null)
+            healthFill.color = healthGradient.Evaluate(currentHealth / maxHealth);
     }
 
     void GameOver()
@@ -81,18 +86,5 @@ public class PlayerHealth : MonoBehaviour
     void RestartLevel()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
-    // Fallback UI if no slider is assigned
-    void OnGUI()
-    {
-        if (healthSlider == null)
-        {
-            GUI.Box(new Rect(10, 10, 150, 25), $"Health: {currentHealth:F0} / {maxHealth}");
-            if (isGameOver)
-            {
-                GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2, 100, 25), "GAME OVER");
-            }
-        }
     }
 }
