@@ -26,6 +26,6 @@ public class GameTimer : MonoBehaviour
         int minutes = (int)(elapsed / 60f);
         int seconds = (int)(elapsed % 60f);
         int hundredths  = (int)((elapsed * 100f) % 100f);
-        timerText.text = $"{minutes:00}:{seconds:00}.{hundredths}";
+        timerText.text = $"Time: {minutes:00}:{seconds:00}.{hundredths}";
     }
 }
