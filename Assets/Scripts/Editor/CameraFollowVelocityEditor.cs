@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(CameraFollowVelocity))]
+[CustomEditor(typeof(PerspectiveCameraFollow))]
 public class CameraFollowVelocityEditor : Editor
 {
     public override void OnInspectorGUI()
@@ -10,7 +10,7 @@ public class CameraFollowVelocityEditor : Editor
 
         EditorGUILayout.Space();
 
-        CameraFollowVelocity script = (CameraFollowVelocity)target;
+        PerspectiveCameraFollow script = (PerspectiveCameraFollow)target;
 
         GUI.enabled = script.player != null;
 

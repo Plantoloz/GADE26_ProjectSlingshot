@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraFollowVelocity : MonoBehaviour
+public class PerspectiveCameraFollow : MonoBehaviour
 {
     public Transform player;
 
@@ -33,6 +33,16 @@ public class CameraFollowVelocity : MonoBehaviour
     [Tooltip("Extra Abstandsfaktor beim Einrahmen von Schiff + Planet")]
     public float focusPadding = 1.3f;
 
+    [Header("Checkpoint Planet Look-At")]
+    public CheckpointManager checkpointManager;
+    [Tooltip("Smooth-Zeit für die Checkpoint-Positionsverfolgung")]
+    public float checkpointFocusSmoothTime = 0.6f;
+    [Tooltip("Maximaler Blend-Anteil Richtung Checkpoint-Planet (0 = kein Einfluss, 1 = vollständig)")]
+    [Range(0f, 1f)]
+    public float checkpointFocusMaxBlend = 0.5f;
+    [Tooltip("Zusätzlicher FOV-Anstieg wenn man vom Checkpoint wegfliegt (Winkel = 180°)")]
+    public float checkpointFOVBoost = 15f;
+
     [SerializeField]
     private Camera cam;
     private Rigidbody playerRb;
@@ -43,12 +53,19 @@ public class CameraFollowVelocity : MonoBehaviour
     private Vector3 lookAheadVelocity;
     private Vector3 lastVelocityDir = Vector3.right;
 
+    private float checkpointFocusBlend;
+    private Vector3 smoothedCheckpointPos;
+    private Vector3 checkpointPosVelocity;
+
     private readonly HashSet<Transform> activePlanets = new HashSet<Transform>();
 
     void Start()
     {
         if (player != null)
+        {
             playerRb = player.GetComponent<Rigidbody>();
+            smoothedCheckpointPos = player.position;
+        }
     }
 
     public void RegisterTrigger(Transform planet)   => activePlanets.Add(planet);
@@ -82,6 +99,31 @@ public class CameraFollowVelocity : MonoBehaviour
         Vector3 targetLookAhead = lastVelocityDir * lookAheadDistance;
         smoothedLookAhead = Vector3.SmoothDamp(smoothedLookAhead, targetLookAhead, ref lookAheadVelocity, lookAheadSmoothTime);
 
+        // Checkpoint planet — compute dot product first so it can influence both FOV and look-at
+        checkpointFocusBlend = 0f;
+        float checkpointAngleFactor = 0f; // 0 = flying toward, 1 = flying away
+        if (checkpointManager != null && !checkpointManager.IsComplete)
+        {
+            int idx = checkpointManager.CurrentIndex;
+            var cps = checkpointManager.checkpoints;
+            if (idx >= 0 && idx < cps.Count && cps[idx] != null)
+            {
+                Vector3 cpPos = cps[idx].transform.position;
+                smoothedCheckpointPos = Vector3.SmoothDamp(
+                    smoothedCheckpointPos, cpPos, ref checkpointPosVelocity, checkpointFocusSmoothTime);
+
+                Vector3 smoothedVelDir = smoothedLookAhead.sqrMagnitude > 0.001f
+                    ? smoothedLookAhead.normalized
+                    : lastVelocityDir;
+                Vector3 toPlanet = (cpPos - player.position).normalized;
+                float dot = Vector3.Dot(smoothedVelDir, toPlanet);
+
+                checkpointFocusBlend = Mathf.Clamp01(dot) * checkpointFocusMaxBlend;
+                // Maps dot [-1, 1] → angleFactor [1, 0]: 0° toward = 0, 180° away = 1
+                checkpointAngleFactor = (1f - dot) * 0.5f;
+            }
+        }
+
         Transform focusPlanet = activePlanets.Count > 0 ? ClosestPlanet() : null;
 
         Vector3 targetPosition;
@@ -95,7 +137,6 @@ public class CameraFollowVelocity : MonoBehaviour
 
             float halfDist = Vector3.Distance(player.position, focusPlanet.position) * 0.5f;
             float planetRadius = focusPlanet.localScale.x * 0.5f;
-            // Approximate FOV to fit the scene
             float requiredSize = (halfDist + planetRadius) * focusPadding;
             targetFOV = Mathf.Clamp(requiredSize * 4f, minFOV, maxFOV);
         }
@@ -110,11 +151,15 @@ public class CameraFollowVelocity : MonoBehaviour
             targetFOV = Mathf.Lerp(minFOV, maxFOV, speed / maxPlayerSpeed);
         }
 
+        // Widen FOV when flying away from checkpoint planet
+        targetFOV = Mathf.Clamp(targetFOV + checkpointAngleFactor * checkpointFOVBoost, minFOV, maxFOV);
+
         // Apply smoothed position
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref followVelocity, followSmoothTime);
 
-        // Always look at the ship + look-ahead point
-        Vector3 lookTarget = player.position + smoothedLookAhead;
+        Vector3 velocityLookTarget = player.position + smoothedLookAhead;
+        Vector3 lookTarget = Vector3.Lerp(velocityLookTarget, smoothedCheckpointPos, checkpointFocusBlend);
+
         Quaternion targetRotation = Quaternion.LookRotation(lookTarget - transform.position, Vector3.up);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime / rotationSmoothTime);
 

@@ -13,6 +13,9 @@ public class ShipController : MonoBehaviour
     public float brakePower = 2f;
     [Range(0, 1)]
     public float thrustAlignmentThreshold = 0.8f; // How aligned we must be to thrust at 100%
+    
+    [Header("Initial Game Settings")]
+    public Vector3 initialVelocity = new (0f, 0f, 0f);
 
     [Header("Proximity Sensor (Casting)")]
     public float shipRadius = 1.5f;   // Radius for immediate vicinity check
@@ -49,6 +52,7 @@ public class ShipController : MonoBehaviour
     private void OnEnable()
     {
         thruster.Stop();
+        rb.linearVelocity = initialVelocity;
     }
 
     void OnMove(InputValue value)
