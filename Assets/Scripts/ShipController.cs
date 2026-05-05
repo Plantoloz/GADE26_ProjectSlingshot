@@ -13,7 +13,13 @@ public class ShipController : MonoBehaviour
     public float brakePower = 2f;
     [Range(0, 1)]
     public float thrustAlignmentThreshold = 0.8f; // How aligned we must be to thrust at 100%
-    
+
+    [Header("Air Resistance (Acceleration Curve)")]
+    public float speedDiminishingStart = 10f; // Speed at which acceleration starts to slow down
+    public float accelerationDropOff = 0.1f;   // How quickly the power drops off
+    public float linearResidueForce = 2f;      // The "small linear growth" force at high speeds
+    public float brakeForceMultiplier = 5f;    // Multiplier for braking against velocity
+
     [Header("Initial Game Settings")]
     public Vector3 initialVelocity = new (0f, 0f, 0f);
 
@@ -24,6 +30,7 @@ public class ShipController : MonoBehaviour
     public ParticleSystem thruster;
 
     public bool IsThrusting { get; private set; }
+    public float LastAppliedThrustForce { get; private set; }
 
     private Rigidbody rb;
     private Animator sensorAnimator;
@@ -73,6 +80,7 @@ public class ShipController : MonoBehaviour
 
         bool isProvidingInput = currentInput.sqrMagnitude > 0.01f;
         IsThrusting = isProvidingInput;
+        LastAppliedThrustForce = 0f;
 
         if (isProvidingInput)
         {
@@ -93,9 +101,38 @@ public class ShipController : MonoBehaviour
             if (alignment > 0)
             {
                 float thrustMultiplier = Mathf.Clamp01((alignment - thrustAlignmentThreshold) / (1f - thrustAlignmentThreshold));
-                rb.AddForce(transform.up * thrustForce * thrustMultiplier);
+                float forceMag = CalculateEffectiveThrust(rb.linearVelocity, transform.up, thrustForce * thrustMultiplier);
+                
+                LastAppliedThrustForce = forceMag;
+                rb.AddForce(transform.up * forceMag);
             }
         }
+    }
+
+    public float CalculateEffectiveThrust(Vector3 currentVelocity, Vector3 thrustDirection, float baseThrust)
+    {
+        if (baseThrust <= 0.01f) return 0f;
+
+        float currentSpeed = currentVelocity.magnitude;
+        float velocityDotThrust = Vector3.Dot(currentVelocity.normalized, thrustDirection);
+
+        // Case 1: BRAKING (Thrusting opposite to movement)
+        if (currentSpeed > 0.1f && velocityDotThrust < -0.1f)
+        {
+            // Use high power to slow down fast
+            return baseThrust * brakeForceMultiplier;
+        }
+
+        // Case 2: ACCELERATING (or thrusting sideways)
+        // We calculate diminishing returns based on speed in the thrust direction
+        float relevantSpeed = Mathf.Max(0, currentSpeed * velocityDotThrust);
+        
+        // Diminishing returns curve: F = (Base - Residue) / (1 + k * speed^2) + Residue
+        // This ensures it never hits zero, maintaining that "small linear growth".
+        float factor = 1f / (1f + accelerationDropOff * Mathf.Pow(Mathf.Max(0, relevantSpeed - speedDiminishingStart), 2f));
+        float effectiveForce = ((baseThrust - linearResidueForce) * factor) + linearResidueForce;
+
+        return Mathf.Max(linearResidueForce, effectiveForce);
     }
 
     void PerformProximityScan()
