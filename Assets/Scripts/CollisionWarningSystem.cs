@@ -6,9 +6,9 @@ public class CollisionWarningSystem : MonoBehaviour
 {
     [Header("Beep Settings")]
     public AudioClip beepClip;
-    public float minBeepInterval = 0.1f;
-    public float maxBeepInterval = 1.0f;
-    public float maxWarningTime = 10f; // Time at which beeping starts at max interval
+    public float minBeepInterval = 0.05f;
+    public float maxBeepInterval = 0.5f;
+    public float maxWarningTime = 5f; // Warning starts only at 5 seconds
 
     [Header("Impact Warning Settings")]
     public AudioClip impactWarningClip;
@@ -33,12 +33,15 @@ public class CollisionWarningSystem : MonoBehaviour
             float timeToImpact = trajectory.timeToImpact;
 
             // 1. Regular Beep (Interval based on time to impact)
-            float interval = Mathf.Lerp(minBeepInterval, maxBeepInterval, Mathf.Clamp01(timeToImpact / maxWarningTime));
-            
-            if (Time.time - lastBeepTime >= interval)
+            if (timeToImpact <= maxWarningTime)
             {
-                PlayBeep();
-                lastBeepTime = Time.time;
+                float interval = Mathf.Lerp(minBeepInterval, maxBeepInterval, Mathf.Clamp01(timeToImpact / maxWarningTime));
+                
+                if (Time.time - lastBeepTime >= interval)
+                {
+                    PlayBeep();
+                    lastBeepTime = Time.time;
+                }
             }
 
             // 2. Impact Imminent Warning (5 seconds away)

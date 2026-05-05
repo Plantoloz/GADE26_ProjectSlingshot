@@ -28,6 +28,8 @@ public class ShipController : MonoBehaviour
 
     [Header("Thruster")]
     public ParticleSystem thruster;
+    public AudioSource thrusterAudio;
+    public float thrusterAudioFadeSpeed = 5f;
 
     public bool IsThrusting { get; private set; }
     public float LastAppliedThrustForce { get; private set; }
@@ -37,6 +39,7 @@ public class ShipController : MonoBehaviour
     private Vector2 currentInput;
     private TrajectoryPredictor trajectory;
     private CameraFollow cameraFollow;
+    private float targetThrusterVolume = 0f;
 
     void Awake()
     {
@@ -45,7 +48,15 @@ public class ShipController : MonoBehaviour
         trajectory = GetComponent<TrajectoryPredictor>();
         cameraFollow = FindFirstObjectByType<CameraFollow>();
         rb.angularVelocity = Vector3.zero;
-        thruster.Play();
+        
+        if (thruster != null) thruster.Play();
+
+        if (thrusterAudio != null)
+        {
+            thrusterAudio.loop = true;
+            thrusterAudio.volume = 0;
+            thrusterAudio.Play();
+        }
 
         // Configure gravity for the player
         GravityBody gb = GetComponent<GravityBody>();
@@ -56,25 +67,31 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        thruster.Stop();
-        rb.linearVelocity = initialVelocity;
-    }
-
     void OnMove(InputValue value)
     {
         currentInput = value.Get<Vector2>();
 
         if (thruster == null) return;
         if (currentInput.sqrMagnitude > 0.01f)
+        {
             thruster.Play();
+            targetThrusterVolume = 1f;
+        }
         else
+        {
             thruster.Stop();
+            targetThrusterVolume = 0f;
+        }
     }
 
     void FixedUpdate()
     {
+        // Update audio volume
+        if (thrusterAudio != null)
+        {
+            thrusterAudio.volume = Mathf.MoveTowards(thrusterAudio.volume, targetThrusterVolume, thrusterAudioFadeSpeed * Time.fixedDeltaTime);
+        }
+
         // D. Perform proximity scan (Radius + Path check)
         PerformProximityScan();
 
