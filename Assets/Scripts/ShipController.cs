@@ -13,6 +13,8 @@ public class ShipController : MonoBehaviour
     public float brakePower = 2f;
     [Range(0, 1)]
     public float thrustAlignmentThreshold = 0.8f; // How aligned we must be to thrust at 100%
+    [Tooltip("When enabled, W/A/S/D are relative to the current velocity vector instead of world axes")]
+    public bool relativeToVelocity = false;
     
     [Header("Initial Game Settings")]
     public Vector3 initialVelocity = new (0f, 0f, 0f);
@@ -76,18 +78,19 @@ public class ShipController : MonoBehaviour
 
         if (isProvidingInput)
         {
+            Vector3 targetDir = GetWorldInputDirection();
+
             // 1. ROTATION: Rotate towards input direction
-            float targetAngle = Mathf.Atan2(currentInput.y, currentInput.x) * Mathf.Rad2Deg - 90f;
+            float targetAngle = Mathf.Atan2(targetDir.y, targetDir.x) * Mathf.Rad2Deg - 90f;
             Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);
-            
+
             // Smoothly rotate towards the target
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
-            
+
             // Instantly kill angular momentum while steering to keep it precise
             rb.angularVelocity = Vector3.zero;
 
             // 2. THRUST: Only thrust if we are somewhat aligned with our target direction
-            Vector3 targetDir = new Vector3(currentInput.x, currentInput.y, 0).normalized;
             float alignment = Vector3.Dot(transform.up, targetDir);
 
             if (alignment > 0)
@@ -96,6 +99,18 @@ public class ShipController : MonoBehaviour
                 rb.AddForce(transform.up * thrustForce * thrustMultiplier);
             }
         }
+    }
+
+    Vector3 GetWorldInputDirection()
+    {
+        Vector3 inputDir = new Vector3(currentInput.x, currentInput.y, 0).normalized;
+
+        if (!relativeToVelocity || rb.linearVelocity.sqrMagnitude < 0.01f)
+            return inputDir;
+
+        // Rotate input by the velocity direction so W = forward along velocity
+        float velocityAngle = Mathf.Atan2(rb.linearVelocity.y, rb.linearVelocity.x) * Mathf.Rad2Deg;
+        return Quaternion.Euler(0, 0, velocityAngle - 90f) * inputDir;
     }
 
     void PerformProximityScan()

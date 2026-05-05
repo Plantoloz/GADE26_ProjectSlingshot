@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d48e7d87040ce4f66a07c75b885f4f80, type: 3}
-  m_Name: Shape
+  m_Name: ShapeSyren3
   m_EditorClassIdentifier: 
-  planetRadius: 1000
+  planetRadius: 500
   noiseLayers:
   - enabled: 1
     useFirstLayerAsMask: 0
@@ -22,7 +22,7 @@ MonoBehaviour:
         seed: 0
         strength: 0.08
         numLayers: 8
-        baseRoughness: 1.07
+        baseRoughness: 0.8
         roughness: 2.2
         persistence: 0.5
         centre: {x: 1.11, y: 0.92, z: -0.39}
@@ -54,7 +54,7 @@ MonoBehaviour:
         seed: 0
         strength: 1.42
         numLayers: 4
-        baseRoughness: 1.59
+        baseRoughness: 1.09
         roughness: 3.3
         persistence: 0.5
         centre: {x: 0, y: 0, z: 0}

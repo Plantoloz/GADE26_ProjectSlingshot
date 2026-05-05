@@ -7,6 +7,10 @@ public class EngineOverheat : MonoBehaviour
     public float heatRate = 20f;
     public float coolRate = 10f;
 
+    [Header("Overheat Damage")]
+    [Tooltip("Leben pro Sekunde, die abgezogen werden wenn Overheat voll und Schub aktiv")]
+    public float overheatingDamageRate = 10f;
+
     [Header("UI References")]
     public Slider overheatSlider;
     public Image overheatFill;
@@ -43,8 +47,8 @@ public class EngineOverheat : MonoBehaviour
 
         UpdateUI();
 
-        if (heat >= 100f)
-            playerHealth.TakeDamage(playerHealth.currentHealth);
+        if (heat >= 100f && ship.IsThrusting)
+            playerHealth.TakeDamage(overheatingDamageRate * Time.deltaTime);
     }
 
     void UpdateUI()
