@@ -13,6 +13,13 @@ public class ShipController : MonoBehaviour
     public float brakePower = 2f;
     [Range(0, 1)]
     public float thrustAlignmentThreshold = 0.8f; // How aligned we must be to thrust at 100%
+
+    [Header("Air Resistance (Acceleration Curve)")]
+    public float speedDiminishingStart = 10f; // Speed at which acceleration starts to slow down
+    public float accelerationDropOff = 0.1f;   // How quickly the power drops off
+    public float linearResidueForce = 2f;      // The "small linear growth" force at high speeds
+    public float brakeForceMultiplier = 5f;    // Multiplier for braking against velocity
+
     [Tooltip("When enabled, W/A/S/D are relative to the current velocity vector instead of world axes")]
     public bool relativeToVelocity = false;
     
@@ -24,14 +31,18 @@ public class ShipController : MonoBehaviour
 
     [Header("Thruster")]
     public ParticleSystem thruster;
+    public AudioSource thrusterAudio;
+    public float thrusterAudioFadeSpeed = 5f;
 
     public bool IsThrusting { get; private set; }
+    public float LastAppliedThrustForce { get; private set; }
 
     private Rigidbody rb;
     private Animator sensorAnimator;
     private Vector2 currentInput;
     private TrajectoryPredictor trajectory;
     private CameraFollow cameraFollow;
+    private float targetThrusterVolume = 0f;
 
     void Awake()
     {
@@ -40,7 +51,15 @@ public class ShipController : MonoBehaviour
         trajectory = GetComponent<TrajectoryPredictor>();
         cameraFollow = FindFirstObjectByType<CameraFollow>();
         rb.angularVelocity = Vector3.zero;
-        thruster.Play();
+        
+        if (thruster != null) thruster.Play();
+
+        if (thrusterAudio != null)
+        {
+            thrusterAudio.loop = true;
+            thrusterAudio.volume = 0;
+            thrusterAudio.Play();
+        }
 
         // Configure gravity for the player
         GravityBody gb = GetComponent<GravityBody>();
@@ -51,30 +70,37 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        thruster.Stop();
-        rb.linearVelocity = initialVelocity;
-    }
-
     void OnMove(InputValue value)
     {
         currentInput = value.Get<Vector2>();
 
         if (thruster == null) return;
         if (currentInput.sqrMagnitude > 0.01f)
+        {
             thruster.Play();
+            targetThrusterVolume = 1f;
+        }
         else
+        {
             thruster.Stop();
+            targetThrusterVolume = 0f;
+        }
     }
 
     void FixedUpdate()
     {
+        // Update audio volume
+        if (thrusterAudio != null)
+        {
+            thrusterAudio.volume = Mathf.MoveTowards(thrusterAudio.volume, targetThrusterVolume, thrusterAudioFadeSpeed * Time.fixedDeltaTime);
+        }
+
         // D. Perform proximity scan (Radius + Path check)
         PerformProximityScan();
 
         bool isProvidingInput = currentInput.sqrMagnitude > 0.01f;
         IsThrusting = isProvidingInput;
+        LastAppliedThrustForce = 0f;
 
         if (isProvidingInput)
         {
@@ -96,9 +122,38 @@ public class ShipController : MonoBehaviour
             if (alignment > 0)
             {
                 float thrustMultiplier = Mathf.Clamp01((alignment - thrustAlignmentThreshold) / (1f - thrustAlignmentThreshold));
-                rb.AddForce(transform.up * thrustForce * thrustMultiplier);
+                float forceMag = CalculateEffectiveThrust(rb.linearVelocity, transform.up, thrustForce * thrustMultiplier);
+                
+                LastAppliedThrustForce = forceMag;
+                rb.AddForce(transform.up * forceMag);
             }
         }
+    }
+
+    public float CalculateEffectiveThrust(Vector3 currentVelocity, Vector3 thrustDirection, float baseThrust)
+    {
+        if (baseThrust <= 0.01f) return 0f;
+
+        float currentSpeed = currentVelocity.magnitude;
+        float velocityDotThrust = Vector3.Dot(currentVelocity.normalized, thrustDirection);
+
+        // Case 1: BRAKING (Thrusting opposite to movement)
+        if (currentSpeed > 0.1f && velocityDotThrust < -0.1f)
+        {
+            // Use high power to slow down fast
+            return baseThrust * brakeForceMultiplier;
+        }
+
+        // Case 2: ACCELERATING (or thrusting sideways)
+        // We calculate diminishing returns based on speed in the thrust direction
+        float relevantSpeed = Mathf.Max(0, currentSpeed * velocityDotThrust);
+        
+        // Diminishing returns curve: F = (Base - Residue) / (1 + k * speed^2) + Residue
+        // This ensures it never hits zero, maintaining that "small linear growth".
+        float factor = 1f / (1f + accelerationDropOff * Mathf.Pow(Mathf.Max(0, relevantSpeed - speedDiminishingStart), 2f));
+        float effectiveForce = ((baseThrust - linearResidueForce) * factor) + linearResidueForce;
+
+        return Mathf.Max(linearResidueForce, effectiveForce);
     }
 
     Vector3 GetWorldInputDirection()

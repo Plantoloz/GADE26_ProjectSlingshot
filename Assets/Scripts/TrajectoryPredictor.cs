@@ -14,6 +14,7 @@ public class TrajectoryPredictor : MonoBehaviour
     public float lineWidth  = 0.1f; // World-space line width
 
     public bool pathCollisionDetected { get; private set; }
+    public float timeToImpact { get; private set; } = float.PositiveInfinity;
 
     private LineRenderer line;
     private ShipController ship;
@@ -48,6 +49,7 @@ public class TrajectoryPredictor : MonoBehaviour
     void DrawProjection()
     {
         pathCollisionDetected = false;
+        timeToImpact = float.PositiveInfinity;
 
         Vector3 virtualPlayerPos = transform.position;
         Vector3 virtualPlayerVel = rb.linearVelocity;
@@ -86,7 +88,11 @@ public class TrajectoryPredictor : MonoBehaviour
                     if (hit.gameObject != gameObject && (hit.CompareTag("Asteroid") || hit.CompareTag("Planet")))
                         { pathCollisionDetected = true; break; }
 
-                if (pathCollisionDetected) break;
+                if (pathCollisionDetected)
+                {
+                    timeToImpact = i * stepTime;
+                    break;
+                }
             }
 
             // 1. Calculate gravity acceleration from all virtual attractors
