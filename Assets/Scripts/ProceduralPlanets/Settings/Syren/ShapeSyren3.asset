@@ -22,7 +22,7 @@ MonoBehaviour:
         seed: 0
         strength: 0.08
         numLayers: 8
-        baseRoughness: 0.8
+        baseRoughness: 1.26
         roughness: 2.2
         persistence: 0.5
         centre: {x: 1.11, y: 0.92, z: -0.39}

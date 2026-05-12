@@ -3,10 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(SphereCollider))]
 [RequireComponent(typeof(LineRenderer))]
-public class Checkpoint : MonoBehaviour
+public class Checkpoint : CheckpointBase
 {
-    public enum CheckpointState { Inactive, Active, Completed }
-
     [Header("Trigger")]
     public float checkpointRadius = 15f;
 
@@ -18,8 +16,6 @@ public class Checkpoint : MonoBehaviour
     public Color inactiveColor  = new Color(0.5f, 0.5f, 0.5f, 0.4f);
     public Color activeColor    = new Color(1f, 0.9f, 0f, 1f);
     public Color completedColor = new Color(0f, 1f, 0.4f, 0.7f);
-
-    public CheckpointState CurrentState { get; private set; } = CheckpointState.Inactive;
 
     private SphereCollider trigger;
     private LineRenderer ring;
@@ -54,21 +50,21 @@ public class Checkpoint : MonoBehaviour
 
     // ── State transitions (called by CheckpointManager) ──────────────────────
 
-    public void Activate()
+    public override void Activate()
     {
         CurrentState      = CheckpointState.Active;
         trigger.enabled   = true;
         ApplyVisuals();
     }
 
-    public void Deactivate()
+    public override void Deactivate()
     {
         CurrentState    = CheckpointState.Inactive;
         trigger.enabled = false;
         ApplyVisuals();
     }
 
-    public void Complete()
+    public override void Complete()
     {
         CurrentState    = CheckpointState.Completed;
         trigger.enabled = false;

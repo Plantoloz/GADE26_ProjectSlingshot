@@ -6,7 +6,7 @@ public class CheckpointManager : MonoBehaviour
 {
     [Header("Checkpoint Order")]
     [Tooltip("Assign Checkpoint components in the order the player must reach them.")]
-    public List<Checkpoint> checkpoints = new List<Checkpoint>();
+    public List<CheckpointBase> checkpoints = new List<CheckpointBase>();
 
     [Header("Events")]
     public UnityEvent onAllCheckpointsCompleted;
@@ -22,7 +22,7 @@ public class CheckpointManager : MonoBehaviour
         AdvanceToNext();
     }
 
-    public void OnCheckpointReached(Checkpoint cp)
+    public void OnCheckpointReached(CheckpointBase cp)
     {
         if (IsComplete) return;
         if (CurrentIndex < 0 || CurrentIndex >= checkpoints.Count) return;

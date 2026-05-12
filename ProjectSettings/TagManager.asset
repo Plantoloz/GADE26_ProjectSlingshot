@@ -7,14 +7,15 @@ TagManager:
   - Asteroid
   - Planet
   - CameraTrigger
+  - Trajectory
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Minimap
   - Water
   - UI
-  - 
+  - Planet
   - 
   - 
   - 
