@@ -11,19 +11,6 @@ public class TrajectoryPredictor : MonoBehaviour
     public float stepTime          = 0.1f;
     public float predictionRadius  = 0.8f;
 
-    [Header("Gameplay Line")]
-    [Tooltip("LineRenderer on the 'Gameplay Line' child GO (Default layer)")]
-    public LineRenderer gameplayLine;
-    public float dashLength = 0.5f;
-    public float gapLength  = 0.3f;
-    public float lineWidth  = 0.1f;
-
-    [Header("Minimap Line")]
-    [Tooltip("LineRenderer on the 'Minimap Line' child GO (Minimap layer)")]
-    public LineRenderer minimapLine;
-    public float minimapLineWidth = 2f;
-    public Color minimapLineColor = new Color(0.4f, 0.9f, 1f, 0.8f);
-
     public bool  pathCollisionDetected { get; private set; }
     public float timeToImpact          { get; private set; } = float.PositiveInfinity;
     public Vector3 NextPredictedPoint  { get; private set; }
@@ -31,11 +18,9 @@ public class TrajectoryPredictor : MonoBehaviour
     // Pre-allocated buffers — zero per-frame heap allocations
     private Rigidbody      rb;
     private Vector3[]      simPositionBuffer;
-    private Keyframe[]     keyframeBuffer;
     private VirtualBody[]  attractorBuffer  = new VirtualBody[32];
     private Collider[]     overlapBuffer3D  = new Collider[16];
     private Collider2D[]   overlapBuffer2D  = new Collider2D[16];
-    private AnimationCurve widthCurve       = new AnimationCurve();
 
     private struct VirtualBody
     {
@@ -47,45 +32,11 @@ public class TrajectoryPredictor : MonoBehaviour
     void Awake()
     {
         rb = shipRigidbody;
-
         simPositionBuffer = new Vector3[predictionSteps];
-        keyframeBuffer    = new Keyframe[predictionSteps];
-
-        SetupGameplayLine();
-        SetupMinimapLine();
-
         NextPredictedPoint = rb != null ? rb.position + shipRigidbody.transform.up : Vector3.zero;
     }
 
     void LateUpdate() => DrawProjection();
-
-    // ── Line setup ────────────────────────────────────────────────────────────
-
-    void SetupGameplayLine()
-    {
-        if (gameplayLine == null) return;
-        gameplayLine.material            = new Material(Shader.Find("Sprites/Default"));
-        gameplayLine.material.color      = Color.white;
-        gameplayLine.startColor          = Color.white;
-        gameplayLine.endColor            = Color.white;
-        gameplayLine.widthMultiplier     = lineWidth;
-        gameplayLine.useWorldSpace       = true;
-        gameplayLine.shadowCastingMode   = UnityEngine.Rendering.ShadowCastingMode.Off;
-        gameplayLine.receiveShadows      = false;
-    }
-
-    void SetupMinimapLine()
-    {
-        if (minimapLine == null) return;
-        minimapLine.material            = new Material(Shader.Find("Sprites/Default"));
-        minimapLine.material.color      = Color.white;
-        minimapLine.startColor          = minimapLineColor;
-        minimapLine.endColor            = new Color(minimapLineColor.r, minimapLineColor.g, minimapLineColor.b, 0f);
-        minimapLine.widthMultiplier     = minimapLineWidth;
-        minimapLine.useWorldSpace       = true;
-        minimapLine.shadowCastingMode   = UnityEngine.Rendering.ShadowCastingMode.Off;
-        minimapLine.receiveShadows      = false;
-    }
 
     // ── Simulation ────────────────────────────────────────────────────────────
 
@@ -170,41 +121,5 @@ public class TrajectoryPredictor : MonoBehaviour
 
         if (simCount > 1)
             NextPredictedPoint = simPositionBuffer[1];
-
-        WriteToGameplayLine(simCount);
-        WriteToMinimapLine(simCount);
-    }
-
-    // ── Line writers ──────────────────────────────────────────────────────────
-
-    void WriteToGameplayLine(int simCount)
-    {
-        if (gameplayLine == null) return;
-
-        gameplayLine.positionCount = simCount;
-        gameplayLine.SetPositions(simPositionBuffer);
-
-        // Dashed width curve
-        float cycleLen  = dashLength + gapLength;
-        float distAccum = 0f;
-        for (int i = 0; i < simCount; i++)
-        {
-            if (i > 0)
-                distAccum += Vector3.Distance(simPositionBuffer[i], simPositionBuffer[i - 1]);
-            float t = simCount > 1 ? (float)i / (simCount - 1) : 0f;
-            float w = distAccum % cycleLen < dashLength ? 1f : 0f;
-            keyframeBuffer[i] = new Keyframe(t, w, float.PositiveInfinity, float.PositiveInfinity);
-        }
-        widthCurve.keys      = keyframeBuffer[0..simCount];
-        gameplayLine.widthCurve      = widthCurve;
-        gameplayLine.widthMultiplier = lineWidth;
-    }
-
-    void WriteToMinimapLine(int simCount)
-    {
-        if (minimapLine == null) return;
-
-        minimapLine.positionCount = simCount;
-        minimapLine.SetPositions(simPositionBuffer);
     }
 }
