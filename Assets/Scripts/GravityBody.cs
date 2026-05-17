@@ -10,7 +10,7 @@ public class GravityBody : MonoBehaviour
     public bool isAttractor = true;
     public bool isAttractee = false;
 
-    public static float GRAVITY_CONSTANT = 10f; 
+    public static float GRAVITY_CONSTANT = 9.81f; 
 
     [Header("Optimization")]
     public float influenceRadiusMultiplier = 5f; 
