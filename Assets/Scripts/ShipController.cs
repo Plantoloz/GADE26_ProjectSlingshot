@@ -30,6 +30,7 @@ public class ShipController : MonoBehaviour
     public ParticleSystem thruster;
     public AudioSource thrusterAudio;
     public float thrusterAudioFadeSpeed = 5f;
+    public string thrusterSoundName = "Thruster";
 
     public bool IsThrusting { get; private set; }
     public float LastAppliedThrustForce { get; private set; }
@@ -89,7 +90,13 @@ public class ShipController : MonoBehaviour
         // Update audio volume
         if (thrusterAudio != null)
         {
-            thrusterAudio.volume = Mathf.MoveTowards(thrusterAudio.volume, targetThrusterVolume, thrusterAudioFadeSpeed * Time.fixedDeltaTime);
+            float sfxVolume = AudioManager.Instance != null ? AudioManager.Instance.GetSFXVolume() : 1f;
+            float clipMultiplier = AudioManager.Instance != null ? AudioManager.Instance.GetSoundVolume(thrusterSoundName) : 1f;
+            float currentTarget = targetThrusterVolume * sfxVolume * clipMultiplier;
+            
+            // Set spatial blend to 3D so it sounds like it comes from the ship
+            thrusterAudio.spatialBlend = 1f; 
+            thrusterAudio.volume = Mathf.MoveTowards(thrusterAudio.volume, currentTarget, thrusterAudioFadeSpeed * Time.fixedDeltaTime);
         }
 
         // D. Perform proximity scan (Radius + Path check)

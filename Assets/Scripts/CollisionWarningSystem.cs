@@ -15,6 +15,10 @@ public class CollisionWarningSystem : MonoBehaviour
     public float impactWarningThreshold = 5f;
     public float impactWarningCooldown = 10f;
 
+    [Header("Sound Names")]
+    public string beepSoundName = "Beep";
+    public string warningSoundName = "ImpactWarning";
+
     private TrajectoryPredictor trajectory;
     private AudioSource audioSource;
     private float lastBeepTime;
@@ -58,27 +62,17 @@ public class CollisionWarningSystem : MonoBehaviour
 
     void PlayBeep()
     {
-        if (beepClip != null)
+        if (AudioManager.Instance != null)
         {
-            audioSource.PlayOneShot(beepClip);
-        }
-        else
-        {
-            // Fallback: simple beep sound if no clip is assigned
-            // We can use a Debug.Log for now or try to generate a beep
-            // Debug.Log("BEEP! Time to impact: " + trajectory.timeToImpact);
+            AudioManager.Instance.PlaySFX(beepSoundName);
         }
     }
 
     void PlayImpactWarning()
     {
-        if (impactWarningClip != null)
+        if (AudioManager.Instance != null)
         {
-            audioSource.PlayOneShot(impactWarningClip);
-        }
-        else
-        {
-            Debug.Log("<color=red>IMPACT IMMINENT! 5 SECONDS TO IMPACT!</color>");
+            AudioManager.Instance.PlaySFX(warningSoundName);
         }
     }
 
