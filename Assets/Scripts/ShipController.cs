@@ -9,7 +9,7 @@ public class ShipController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float thrustForce = 20f;
-    public float strafeDegreesPerSecond = 60f;
+    public float strafeForce = 15f;
     public float rotationSpeed = 10f;
 
     [Header("Air Resistance (Acceleration Curve)")]
@@ -128,8 +128,10 @@ public class ShipController : MonoBehaviour
 
         if (Mathf.Abs(strafeInput) > 0.05f)
         {
-            float angle = -strafeInput * strafeDegreesPerSecond * Time.fixedDeltaTime;
-            rb.linearVelocity = Quaternion.Euler(0f, 0f, angle) * rb.linearVelocity;
+            // Perpendicular to velocity (right = positive strafe)
+            Vector3 strafeDir = new Vector3(velDir.y, -velDir.x, 0f) * strafeInput;
+            float forceMag = CalculateEffectiveThrust(rb.linearVelocity, strafeDir.normalized, strafeForce * Mathf.Abs(strafeInput));
+            rb.AddForce(strafeDir.normalized * forceMag);
         }
 
         if (Mathf.Abs(thrustInput) > 0.05f)
