@@ -60,6 +60,7 @@ public class ShipController : MonoBehaviour
         {
             thrusterAudio.loop = true;
             thrusterAudio.volume = 0f;
+            thrusterAudio.spatialBlend = 0f;
             thrusterAudio.Play();
         }
 
@@ -108,8 +109,6 @@ public class ShipController : MonoBehaviour
             float clipMultiplier = AudioManager.Instance != null ? AudioManager.Instance.GetSoundVolume(thrusterSoundName) : 1f;
             float currentTarget = targetThrusterVolume * sfxVolume * clipMultiplier;
             
-            // Set spatial blend to 3D so it sounds like it comes from the ship
-            thrusterAudio.spatialBlend = 1f; 
             thrusterAudio.volume = Mathf.MoveTowards(thrusterAudio.volume, currentTarget, thrusterAudioFadeSpeed * Time.fixedDeltaTime);
         }
 

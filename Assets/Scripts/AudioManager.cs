@@ -109,21 +109,12 @@ public class AudioManager : MonoBehaviour
 
     public void PlaySFXAtPoint(AudioClip clip, Vector3 position, float volumeScale = 1f)
     {
-        if (clip == null) return;
-        float clipMultiplier = GetClipMultiplier(clip);
-        AudioSource.PlayClipAtPoint(clip, position, volumeScale * clipMultiplier * GetSFXVolume());
+        PlaySFX(clip, volumeScale);
     }
 
     public void PlaySFXAtPoint(string soundName, Vector3 position, float volumeScale = 1f)
     {
-        if (soundDict.TryGetValue(soundName, out SoundEffect sound))
-        {
-            AudioSource.PlayClipAtPoint(sound.clip, position, volumeScale * sound.volumeMultiplier * GetSFXVolume());
-        }
-        else
-        {
-            Debug.LogWarning($"Sound '{soundName}' not found in AudioManager library.");
-        }
+        PlaySFX(soundName, volumeScale);
     }
 
     public float GetClipMultiplier(AudioClip clip)

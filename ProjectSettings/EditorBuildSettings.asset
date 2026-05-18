@@ -9,8 +9,8 @@ EditorBuildSettings:
     path: Assets/Scenes/DefiniteElements/Menu.unity
     guid: 06336d0baa437490199fceb563c91ef6
   - enabled: 1
-    path: Assets/Scenes/Level01_3D.unity
-    guid: 247494e5733e546bcb2b8c9b9c53a933
+    path: Assets/Scenes/Level02_Sector_Syren.unity
+    guid: 762b08b86f4be42aa8bfc64851e4c65b
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
