@@ -321,6 +321,6 @@ MonoBehaviour:
     volumeMultiplier: 0.252
   - name: Collision
     clip: {fileID: 8300000, guid: b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2, type: 3}
-    volumeMultiplier: 0.374
+    volumeMultiplier: 0.127
   backgroundMusic: {fileID: 8300000, guid: a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1, type: 3}
   collisionSound: {fileID: 8300000, guid: b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2, type: 3}
