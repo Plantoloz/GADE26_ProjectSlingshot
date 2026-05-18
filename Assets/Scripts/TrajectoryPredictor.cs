@@ -1,43 +1,26 @@
-using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(LineRenderer))]
 public class TrajectoryPredictor : MonoBehaviour
 {
-    public int predictionSteps = 50;         // How far the line goes
-    public float stepTime = 0.1f;            // Precision of the line
-    public float predictionRadius = 0.8f;    // Estimated width of the ship for collision checking
+    [Header("Ship Reference")]
+    [Tooltip("The Ship's Rigidbody. Required — TrajectoryPredictor must sit on a child GO of the Ship.")]
+    public Rigidbody shipRigidbody;
 
-    [Header("Dash Settings")]
-    public float dashLength = 0.5f; // World-space length of one visible dash
-    public float gapLength  = 0.3f; // World-space length of one invisible gap
-    public float lineWidth  = 0.1f; // World-space line width
+    [Header("Simulation")]
+    public int   predictionSteps   = 50;
+    public float stepTime          = 0.1f;
+    public float predictionRadius  = 0.8f;
 
-    public bool pathCollisionDetected { get; private set; }
-    public float timeToImpact { get; private set; } = float.PositiveInfinity;
+    public bool  pathCollisionDetected { get; private set; }
+    public float timeToImpact          { get; private set; } = float.PositiveInfinity;
+    public Vector3 NextPredictedPoint  { get; private set; }
 
-    private LineRenderer line;
-    private ShipController ship;
-    private Rigidbody rb;
-
-    void Awake()
-    {
-        line = GetComponent<LineRenderer>();
-        rb   = GetComponent<Rigidbody>();
-        ship = GetComponent<ShipController>();
-
-        // Replace whatever material is on the renderer with a plain white unlit one
-        line.material           = new Material(Shader.Find("Sprites/Default"));
-        line.material.color     = Color.white;
-        line.startColor         = Color.white;
-        line.endColor           = Color.white;
-        line.widthMultiplier    = lineWidth;
-    }
-
-    void LateUpdate()
-    {
-        DrawProjection();
-    }
+    // Pre-allocated buffers — zero per-frame heap allocations
+    private Rigidbody      rb;
+    private Vector3[]      simPositionBuffer;
+    private VirtualBody[]  attractorBuffer  = new VirtualBody[32];
+    private Collider[]     overlapBuffer3D  = new Collider[16];
+    private Collider2D[]   overlapBuffer2D  = new Collider2D[16];
 
     private struct VirtualBody
     {
@@ -46,47 +29,68 @@ public class TrajectoryPredictor : MonoBehaviour
         public Vector3 velocity;
     }
 
+    void Awake()
+    {
+        rb = shipRigidbody;
+        simPositionBuffer = new Vector3[predictionSteps];
+        NextPredictedPoint = rb != null ? rb.position + shipRigidbody.transform.up : Vector3.zero;
+    }
+
+    void LateUpdate() => DrawProjection();
+
+    // ── Simulation ────────────────────────────────────────────────────────────
+
     void DrawProjection()
     {
+        if (rb == null) return;
+
         pathCollisionDetected = false;
-        timeToImpact = float.PositiveInfinity;
+        timeToImpact          = float.PositiveInfinity;
+        NextPredictedPoint    = rb.position + shipRigidbody.transform.up;
 
-        Vector3 virtualPlayerPos = transform.position;
-        Vector3 virtualPlayerVel = rb.linearVelocity;
+        Vector3 virtualPos = rb.position;
+        Vector3 virtualVel = rb.linearVelocity;
 
-        // Capture initial state of all relevant attractors
-        List<VirtualBody> virtualAttractors = new List<VirtualBody>();
+        int attractorCount = 0;
         foreach (var body in GravityBody.allBodies)
         {
-            if (body == null || body.gameObject == gameObject || !body.isAttractor) continue;
-
-            virtualAttractors.Add(new VirtualBody {
+            if (body == null || body.gameObject == shipRigidbody.gameObject || !body.isAttractor) continue;
+            if (attractorCount >= attractorBuffer.Length) break;
+            attractorBuffer[attractorCount++] = new VirtualBody {
                 body     = body,
                 position = body.rb.position,
                 velocity = body.rb.linearVelocity
-            });
+            };
         }
 
-        // Collect positions first, then build the dashed line from them
-        List<Vector3> simPositions = new List<Vector3>(predictionSteps);
+        int simCount = 0;
 
         for (int i = 0; i < predictionSteps; i++)
         {
-            // Safety Check: Stop if we hit NaN or Infinity
-            if (!float.IsFinite(virtualPlayerPos.x) || !float.IsFinite(virtualPlayerPos.y)) break;
+            if (!float.IsFinite(virtualPos.x) || !float.IsFinite(virtualPos.y)) break;
 
-            simPositions.Add(virtualPlayerPos);
+            simPositionBuffer[simCount++] = virtualPos;
 
-            // Collision check – 3D (Asteroids) and 2D (Planets use PolygonCollider2D)
             if (!pathCollisionDetected)
             {
-                foreach (var hit in Physics.OverlapSphere(virtualPlayerPos, predictionRadius))
-                    if (hit.gameObject != gameObject && (hit.CompareTag("Asteroid") || hit.CompareTag("Planet")))
-                        { pathCollisionDetected = true; break; }
+                int n3D = Physics.OverlapSphereNonAlloc(virtualPos, predictionRadius, overlapBuffer3D);
+                for (int k = 0; k < n3D; k++)
+                {
+                    if (overlapBuffer3D[k].gameObject != shipRigidbody.gameObject &&
+                        (overlapBuffer3D[k].CompareTag("Asteroid") || overlapBuffer3D[k].CompareTag("Planet")))
+                    { pathCollisionDetected = true; break; }
+                }
 
-                foreach (var hit in Physics2D.OverlapCircleAll((Vector2)virtualPlayerPos, predictionRadius))
-                    if (hit.gameObject != gameObject && (hit.CompareTag("Asteroid") || hit.CompareTag("Planet")))
+                if (!pathCollisionDetected)
+                {
+                    int n2D = Physics2D.OverlapCircleNonAlloc((Vector2)virtualPos, predictionRadius, overlapBuffer2D);
+                    for (int k = 0; k < n2D; k++)
+                    {
+                        if (overlapBuffer2D[k].gameObject != shipRigidbody.gameObject &&
+                            (overlapBuffer2D[k].CompareTag("Asteroid") || overlapBuffer2D[k].CompareTag("Planet")))
                         { pathCollisionDetected = true; break; }
+                    }
+                }
 
                 if (pathCollisionDetected)
                 {
@@ -95,58 +99,27 @@ public class TrajectoryPredictor : MonoBehaviour
                 }
             }
 
-            // 1. Calculate gravity acceleration from all virtual attractors
-            Vector3 totalGravityAccel = Vector3.zero;
-            foreach (var vBody in virtualAttractors)
+            Vector3 gravAccel = Vector3.zero;
+            for (int j = 0; j < attractorCount; j++)
             {
-                Vector3 dir  = vBody.position - virtualPlayerPos;
+                Vector3 dir  = attractorBuffer[j].position - virtualPos;
                 float   dist = dir.magnitude;
-
-                if (dist > 0.01f && dist < vBody.body.influenceRadius)
+                if (dist > 0.01f && dist < attractorBuffer[j].body.influenceRadius)
                 {
-                    float accelMag = GravityBody.GRAVITY_CONSTANT * vBody.body.rb.mass / Mathf.Pow(Mathf.Max(dist, GravityBody.minForceDistance), 2f);
-                    totalGravityAccel += dir.normalized * accelMag;
+                    float mag = GravityBody.GRAVITY_CONSTANT * attractorBuffer[j].body.rb.mass
+                                / Mathf.Pow(Mathf.Max(dist, GravityBody.minForceDistance), 2f);
+                    gravAccel += dir.normalized * mag;
                 }
             }
 
-            // 2. Update virtual player physics
-            virtualPlayerVel += totalGravityAccel * stepTime;
-            virtualPlayerPos += virtualPlayerVel * stepTime;
+            virtualVel += gravAccel * stepTime;
+            virtualPos += virtualVel * stepTime;
 
-            // 3. Update virtual attractor positions (linear drift)
-            for (int j = 0; j < virtualAttractors.Count; j++)
-            {
-                var vBody = virtualAttractors[j];
-                vBody.position += vBody.velocity * stepTime;
-                virtualAttractors[j] = vBody;
-            }
+            for (int j = 0; j < attractorCount; j++)
+                attractorBuffer[j].position += attractorBuffer[j].velocity * stepTime;
         }
 
-        // Set positions on the line renderer
-        line.positionCount = simPositions.Count;
-        line.SetPositions(simPositions.ToArray());
-
-        // Build a stepped width curve based on accumulated world-space distance,
-        // so dash/gap lengths stay constant regardless of ship speed.
-        float cycleLen        = dashLength + gapLength;
-        int   count           = simPositions.Count;
-        float distAccum       = 0f;
-        AnimationCurve widthCurve = new AnimationCurve();
-
-        for (int i = 0; i < count; i++)
-        {
-            if (i > 0)
-                distAccum += Vector3.Distance(simPositions[i], simPositions[i - 1]);
-
-            float t          = count > 1 ? (float)i / (count - 1) : 0f;
-            float posInCycle = distAccum % cycleLen;
-            float w          = posInCycle < dashLength ? 1f : 0f;
-
-            widthCurve.AddKey(new Keyframe(t, w, float.PositiveInfinity, float.PositiveInfinity));
-        }
-
-        line.widthCurve      = widthCurve;
-        line.widthMultiplier = lineWidth;
+        if (simCount > 1)
+            NextPredictedPoint = simPositionBuffer[1];
     }
-
 }

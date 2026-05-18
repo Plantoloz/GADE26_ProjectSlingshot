@@ -9,19 +9,21 @@ public class ShipController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float thrustForce = 20f;
-    public float rotationSpeed = 10f; // Radians per second
-    public float brakePower = 2f;
-    [Range(0, 1)]
-    public float thrustAlignmentThreshold = 0.8f; // How aligned we must be to thrust at 100%
+    public float strafeForce = 15f;
+    public float rotationSpeed = 10f;
 
     [Header("Air Resistance (Acceleration Curve)")]
-    public float speedDiminishingStart = 10f; // Speed at which acceleration starts to slow down
-    public float accelerationDropOff = 0.1f;   // How quickly the power drops off
-    public float linearResidueForce = 2f;      // The "small linear growth" force at high speeds
-    public float brakeForceMultiplier = 5f;    // Multiplier for braking against velocity
+    [Tooltip("Speed at which acceleration starts to slow down")]
+    public float speedDiminishingStart = 10f;
+    [Tooltip("How quickly the power drops off")]
+    public float accelerationDropOff = 0.1f;
+    [Tooltip("The small linear growth force at high speeds")]
+    public float linearResidueForce = 2f;
+    [Tooltip("Multiplier for braking against velocity")]
+    public float brakeForceMultiplier = 5f;
 
     [Header("Initial Game Settings")]
-    public Vector3 initialVelocity = new (0f, 0f, 0f);
+    public Vector3 initialVelocity = new(0f, 0f, 0f);
 
     [Header("Proximity Sensor (Casting)")]
     public float shipRadius = 1.5f;   // Radius for immediate vicinity check
@@ -35,27 +37,29 @@ public class ShipController : MonoBehaviour
     public bool IsThrusting { get; private set; }
     public float LastAppliedThrustForce { get; private set; }
 
+    [Header("References")]
+    [Tooltip("Assign the TrajectoryPredictor from its dedicated GameObject.")]
+    public TrajectoryPredictor trajectoryPredictor;
+
     private Rigidbody rb;
     private Animator sensorAnimator;
-    private Vector2 currentInput;
     private TrajectoryPredictor trajectory;
-    private CameraFollow cameraFollow;
-    private float targetThrusterVolume = 0f;
+    private float strafeInput;
+    private float thrustInput;
+    private float targetThrusterVolume;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         sensorAnimator = GetComponent<Animator>();
-        trajectory = GetComponent<TrajectoryPredictor>();
-        cameraFollow = FindFirstObjectByType<CameraFollow>();
+        trajectory = trajectoryPredictor != null ? trajectoryPredictor : GetComponent<TrajectoryPredictor>();
         rb.angularVelocity = Vector3.zero;
-        
-        if (thruster != null) thruster.Play();
 
+        if (thruster != null) thruster.Play();
         if (thrusterAudio != null)
         {
             thrusterAudio.loop = true;
-            thrusterAudio.volume = 0;
+            thrusterAudio.volume = 0f;
             thrusterAudio.Play();
         }
 
@@ -68,26 +72,36 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    void OnMove(InputValue value)
+    private void Start()
     {
-        currentInput = value.Get<Vector2>();
+        rb.linearVelocity = initialVelocity;
+    }
 
-        if (thruster == null) return;
-        if (currentInput.sqrMagnitude > 0.01f)
+    void OnStrafe(InputValue value)
+    {
+        strafeInput = value.Get<float>();
+        //UpdateThrusterFeedback();
+    }
+
+    void OnThrust(InputValue value)
+    {
+        thrustInput = value.Get<float>();
+        UpdateThrusterFeedback();
+    }
+
+    void UpdateThrusterFeedback()
+    {
+        bool thrusting = Mathf.Abs(thrustInput) > 0.05f;
+        if (thruster != null)
         {
-            thruster.Play();
-            targetThrusterVolume = 1f;
+            if (thrusting) thruster.Play();
+            else thruster.Stop();
         }
-        else
-        {
-            thruster.Stop();
-            targetThrusterVolume = 0f;
-        }
+        targetThrusterVolume = thrusting ? 1f : 0f;
     }
 
     void FixedUpdate()
     {
-        // Update audio volume
         if (thrusterAudio != null)
         {
             float sfxVolume = AudioManager.Instance != null ? AudioManager.Instance.GetSFXVolume() : 1f;
@@ -99,37 +113,43 @@ public class ShipController : MonoBehaviour
             thrusterAudio.volume = Mathf.MoveTowards(thrusterAudio.volume, currentTarget, thrusterAudioFadeSpeed * Time.fixedDeltaTime);
         }
 
-        // D. Perform proximity scan (Radius + Path check)
         PerformProximityScan();
 
-        bool isProvidingInput = currentInput.sqrMagnitude > 0.01f;
-        IsThrusting = isProvidingInput;
+        IsThrusting = /*Mathf.Abs(strafeInput) > 0.01f ||*/ Mathf.Abs(thrustInput) > 0.01f;
         LastAppliedThrustForce = 0f;
 
-        if (isProvidingInput)
+        // Rotate toward next predicted trajectory point
+        if (trajectory != null)
         {
-            // 1. ROTATION: Rotate towards input direction
-            float targetAngle = Mathf.Atan2(currentInput.y, currentInput.x) * Mathf.Rad2Deg - 90f;
-            Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);
-            
-            // Smoothly rotate towards the target
-            rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
-            
-            // Instantly kill angular momentum while steering to keep it precise
-            rb.angularVelocity = Vector3.zero;
-
-            // 2. THRUST: Only thrust if we are somewhat aligned with our target direction
-            Vector3 targetDir = new Vector3(currentInput.x, currentInput.y, 0).normalized;
-            float alignment = Vector3.Dot(transform.up, targetDir);
-
-            if (alignment > 0)
+            Vector3 toNext = trajectory.NextPredictedPoint - transform.position;
+            if (toNext.sqrMagnitude > 0.001f)
             {
-                float thrustMultiplier = Mathf.Clamp01((alignment - thrustAlignmentThreshold) / (1f - thrustAlignmentThreshold));
-                float forceMag = CalculateEffectiveThrust(rb.linearVelocity, transform.up, thrustForce * thrustMultiplier);
-                
-                LastAppliedThrustForce = forceMag;
-                rb.AddForce(transform.up * forceMag);
+                float targetAngle = Mathf.Atan2(toNext.y, toNext.x) * Mathf.Rad2Deg - 90f;
+                Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetAngle);
+                rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
+                rb.angularVelocity = Vector3.zero;
             }
+        }
+
+        if (rb.linearVelocity.sqrMagnitude < 0.01f) return;
+
+        Vector3 velDir = rb.linearVelocity.normalized;
+
+        if (Mathf.Abs(strafeInput) > 0.05f)
+        {
+            // Perpendicular to velocity (right = positive strafe)
+            Vector3 strafeDir = new Vector3(velDir.y, -velDir.x, 0f) * strafeInput;
+            float forceMag = CalculateEffectiveThrust(rb.linearVelocity, strafeDir.normalized, strafeForce * Mathf.Abs(strafeInput));
+            rb.AddForce(strafeDir.normalized * forceMag);
+        }
+
+        if (Mathf.Abs(thrustInput) > 0.05f)
+        {
+            // Along velocity (positive = accelerate, negative = brake)
+            Vector3 thrustDir = velDir * thrustInput;
+            float forceMag = CalculateEffectiveThrust(rb.linearVelocity, thrustDir.normalized, thrustForce * Mathf.Abs(thrustInput));
+            rb.AddForce(thrustDir.normalized * forceMag);
+            LastAppliedThrustForce += forceMag;
         }
     }
 
@@ -140,21 +160,12 @@ public class ShipController : MonoBehaviour
         float currentSpeed = currentVelocity.magnitude;
         float velocityDotThrust = Vector3.Dot(currentVelocity.normalized, thrustDirection);
 
-        // Case 1: BRAKING (Thrusting opposite to movement)
         if (currentSpeed > 0.1f && velocityDotThrust < -0.1f)
-        {
-            // Use high power to slow down fast
             return baseThrust * brakeForceMultiplier;
-        }
 
-        // Case 2: ACCELERATING (or thrusting sideways)
-        // We calculate diminishing returns based on speed in the thrust direction
-        float relevantSpeed = Mathf.Max(0, currentSpeed * velocityDotThrust);
-        
-        // Diminishing returns curve: F = (Base - Residue) / (1 + k * speed^2) + Residue
-        // This ensures it never hits zero, maintaining that "small linear growth".
-        float factor = 1f / (1f + accelerationDropOff * Mathf.Pow(Mathf.Max(0, relevantSpeed - speedDiminishingStart), 2f));
-        float effectiveForce = ((baseThrust - linearResidueForce) * factor) + linearResidueForce;
+        float relevantSpeed = Mathf.Max(0f, currentSpeed * velocityDotThrust);
+        float factor = 1f / (1f + accelerationDropOff * Mathf.Pow(Mathf.Max(0f, relevantSpeed - speedDiminishingStart), 2f));
+        float effectiveForce = (baseThrust - linearResidueForce) * factor + linearResidueForce;
 
         return Mathf.Max(linearResidueForce, effectiveForce);
     }
@@ -162,9 +173,8 @@ public class ShipController : MonoBehaviour
     void PerformProximityScan()
     {
         bool isImmediateDanger = false;
-        bool isPathDanger = (trajectory != null && trajectory.pathCollisionDetected);
+        bool isPathDanger = trajectory != null && trajectory.pathCollisionDetected;
 
-        // 1. Check small radius around the ship (Immediate Danger)
         Collider[] nearby = Physics.OverlapSphere(transform.position, shipRadius);
         foreach (var col in nearby)
         {
@@ -175,33 +185,23 @@ public class ShipController : MonoBehaviour
             }
         }
 
-        // 2. Visual Feedback
         if (sensorAnimator != null)
         {
-            int dangerLevel = 0;
-            if (isImmediateDanger)  dangerLevel = 2;
-            else if (isPathDanger)  dangerLevel = 1;
+            int dangerLevel = isImmediateDanger ? 2 : isPathDanger ? 1 : 0;
             sensorAnimator.SetInteger("DangerLevel", dangerLevel);
-            Debug.Log(dangerLevel);
         }
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("CameraTrigger") && cameraFollow != null)
-            cameraFollow.RegisterTrigger(other.transform.parent);
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("CameraTrigger") && cameraFollow != null)
-            cameraFollow.UnregisterTrigger(other.transform.parent);
-    }
-
-    // Draw the sensor radius in the Editor for debugging
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, shipRadius);
+
+        if (initialVelocity.sqrMagnitude > 0.001f)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawRay(transform.position, initialVelocity);
+            Gizmos.DrawWireSphere(transform.position + initialVelocity, 0.3f);
+        }
     }
 }
