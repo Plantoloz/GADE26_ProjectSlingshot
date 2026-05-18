@@ -15,6 +15,7 @@ public class PlayerHealth : MonoBehaviour
     [Header("Damage Settings")]
     public float minImpactForce = 2f;
     public float damageMultiplier = 5f;
+    public string collisionSoundName = "Collision";
 
     private bool isGameOver = false;
 
@@ -38,6 +39,12 @@ public class PlayerHealth : MonoBehaviour
             {
                 float damage = (impactForce - minImpactForce) * damageMultiplier;
                 TakeDamage(damage);
+                
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlaySFXAtPoint(collisionSoundName, transform.position);
+                }
+                
                 Debug.Log($"Impact! Damage: {damage:F1} | Health: {currentHealth:F1}");
             }
         }
