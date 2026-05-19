@@ -79,15 +79,29 @@ public class PlayerHealth : MonoBehaviour
     {
         isGameOver = true;
         Debug.Log("GAME OVER!");
-        
-        // Disable ship controls so you can't fly after death
+
         ShipController controller = GetComponent<ShipController>();
         if (controller != null) controller.enabled = false;
 
-        // Optional: Trigger explosion effect or sound here
-        
-        // Reload the scene after a short delay
-        Invoke("RestartLevel", 3f);
+        CheckpointManager cm = FindFirstObjectByType<CheckpointManager>();
+        if (cm != null)
+            Invoke("RespawnFromCheckpoint", 3f);
+        else
+            Invoke("RestartLevel", 3f);
+    }
+
+    void RespawnFromCheckpoint()
+    {
+        CheckpointManager cm = FindFirstObjectByType<CheckpointManager>();
+        cm?.RespawnAtLastCheckpoint();
+    }
+
+    public void Respawn()
+    {
+        CancelInvoke();
+        isGameOver = false;
+        currentHealth = maxHealth;
+        UpdateUI();
     }
 
     void RestartLevel()

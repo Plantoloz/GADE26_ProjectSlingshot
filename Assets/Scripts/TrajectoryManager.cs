@@ -175,6 +175,19 @@ public class TrajectoryManager : MonoBehaviour
         ApplyFadeGradient(staticLine, staticColor);
     }
 
+    // ── Public API ───────────────────────────────────────────────────────────
+
+    public Vector3 GetSimulatedVelocityAtCheckpoint(int checkpointIndex)
+    {
+        if (_checkpointPathIndices == null || _allSimPoints == null) return Vector3.zero;
+        if (checkpointIndex < 0 || checkpointIndex >= _checkpointPathIndices.Length) return Vector3.zero;
+
+        int idx = _checkpointPathIndices[checkpointIndex];
+        if (idx + 1 >= _allSimCount) return Vector3.zero;
+
+        return (_allSimPoints[idx + 1] - _allSimPoints[idx]) / stepTime;
+    }
+
     // ── Public API — called by editor bake step only ─────────────────────────
 
     public void RefreshStaticLine()

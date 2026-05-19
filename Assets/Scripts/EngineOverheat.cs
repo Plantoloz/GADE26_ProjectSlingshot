@@ -51,6 +51,12 @@ public class EngineOverheat : MonoBehaviour
             playerHealth.TakeDamage(overheatingDamageRate * Time.deltaTime);
     }
 
+    public void ResetHeat()
+    {
+        heat = 0f;
+        UpdateUI();
+    }
+
     void UpdateUI()
     {
         if (overheatSlider != null)
