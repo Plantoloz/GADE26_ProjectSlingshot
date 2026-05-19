@@ -58,10 +58,15 @@ public class MinimapCamera : MonoBehaviour
         Instance = this;
 
         _cam = GetComponent<Camera>();
-        OutputTexture        = new RenderTexture(textureWidth, textureHeight, 16);
-        _cam.targetTexture   = OutputTexture;
-        _cam.orthographic    = true;
-        _cam.orthographicSize = maxZoom;
+        OutputTexture      = new RenderTexture(textureWidth, textureHeight, 16);
+        _cam.targetTexture = OutputTexture;
+        _cam.orthographic  = true;
+    }
+
+    void OnEnable()
+    {
+        if (_cam != null)
+            _cam.orthographicSize = maxZoom;
     }
 
     void Start()

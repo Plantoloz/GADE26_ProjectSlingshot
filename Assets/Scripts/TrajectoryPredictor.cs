@@ -11,9 +11,18 @@ public class TrajectoryPredictor : MonoBehaviour
     public float stepTime          = 0.1f;
     public float predictionRadius  = 0.8f;
 
+    [Header("Speed Increase")]
+    [Tooltip("If enabled, the ship's speed grows by speedIncreaseRatio each simulated timestep.")]
+    public bool  useSpeedIncrease    = false;
+    [Tooltip("Multiplicative factor applied to velocity magnitude each timestep (e.g. 1.01 = +1 %/step).")]
+    public float speedIncreaseRatio  = 1.01f;
+
     public bool  pathCollisionDetected { get; private set; }
     public float timeToImpact          { get; private set; } = float.PositiveInfinity;
     public Vector3 NextPredictedPoint  { get; private set; }
+
+    public int     SimulatedPointCount { get; private set; }
+    public Vector3[] SimulatedPoints  => simPositionBuffer;
 
     // Pre-allocated buffers — zero per-frame heap allocations
     private Rigidbody      rb;
@@ -119,7 +128,11 @@ public class TrajectoryPredictor : MonoBehaviour
                 attractorBuffer[j].position += attractorBuffer[j].velocity * stepTime;
         }
 
+        SimulatedPointCount = simCount;
         if (simCount > 1)
             NextPredictedPoint = simPositionBuffer[1];
     }
+    
+    
+    
 }

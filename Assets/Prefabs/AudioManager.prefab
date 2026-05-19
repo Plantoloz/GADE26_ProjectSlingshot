@@ -312,15 +312,15 @@ MonoBehaviour:
   soundLibrary:
   - name: Thruster
     clip: {fileID: 8300000, guid: 9ea875dffa9eb4ee99d15427317c67ee, type: 3}
-    volumeMultiplier: 0.381
+    volumeMultiplier: 0.226
   - name: Beep
     clip: {fileID: 8300000, guid: af10bab6ebb4041f4a5065e20bc11679, type: 3}
     volumeMultiplier: 0.108
   - name: ImpactWarning
     clip: {fileID: 8300000, guid: fa2acfaedf9ba4ec091643855a7140db, type: 3}
-    volumeMultiplier: 0.252
+    volumeMultiplier: 0.125
   - name: Collision
     clip: {fileID: 8300000, guid: b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2, type: 3}
-    volumeMultiplier: 0.127
+    volumeMultiplier: 1
   backgroundMusic: {fileID: 8300000, guid: a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1, type: 3}
   collisionSound: {fileID: 8300000, guid: b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2, type: 3}
