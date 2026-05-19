@@ -12,6 +12,10 @@ public class ShipController : MonoBehaviour
     public float strafeForce = 15f;
     public float rotationSpeed = 10f;
 
+    [Header("Input Curve")]
+    [Tooltip("Exponent for analog stick response (1 = linear, 2 = quadratic, …)")]
+    [Min(1f)] public float inputExponent = 2f;
+
     [Header("Air Resistance (Acceleration Curve)")]
     [Tooltip("Speed at which acceleration starts to slow down")]
     public float speedDiminishingStart = 10f;
@@ -91,15 +95,16 @@ public class ShipController : MonoBehaviour
         prevVelocity = StartVelocity;
     }
 
+    float ApplyInputCurve(float v) => Mathf.Sign(v) * Mathf.Pow(Mathf.Abs(v), inputExponent);
+
     void OnStrafe(InputValue value)
     {
-        strafeInput = value.Get<float>();
-        //UpdateThrusterFeedback();
+        strafeInput = ApplyInputCurve(value.Get<float>());
     }
 
     void OnThrust(InputValue value)
     {
-        thrustInput = value.Get<float>();
+        thrustInput = ApplyInputCurve(value.Get<float>());
         UpdateThrusterFeedback();
     }
 

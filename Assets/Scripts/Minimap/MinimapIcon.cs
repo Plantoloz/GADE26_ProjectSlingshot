@@ -33,7 +33,7 @@ public class MinimapIcon : MonoBehaviour
         if (_sr == null) return;
 
         _iconGO.transform.position   = transform.position + worldOffset;
-        _iconGO.transform.rotation   = transform.rotation;
+        _iconGO.transform.rotation   = Quaternion.Euler(0f, 0f, transform.eulerAngles.z);
         _iconGO.transform.localScale = Vector3.one * worldSize;
         _sr.sprite = sprite;
         _sr.color  = color;

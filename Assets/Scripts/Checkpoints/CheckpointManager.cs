@@ -86,5 +86,8 @@ public class CheckpointManager : MonoBehaviour
 
         EngineOverheat overheat = ship.GetComponent<EngineOverheat>();
         if (overheat != null) overheat.ResetHeat();
+
+        SelfDestruct selfDestruct = ship.GetComponent<SelfDestruct>();
+        if (selfDestruct != null) selfDestruct.ResetInput();
     }
 }

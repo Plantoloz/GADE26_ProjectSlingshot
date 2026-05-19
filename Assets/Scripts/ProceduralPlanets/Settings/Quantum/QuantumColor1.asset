@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6e6c8ca3ba8841e191076baacd2a9ab, type: 3}
-  m_Name: TrimaxColor3
+  m_Name: QuantumColor1
   m_EditorClassIdentifier: 
   planetMaterial: {fileID: 2100000, guid: 45da21aad7693410c9753fb65c26d2a2, type: 2}
   biomeColourSettings:

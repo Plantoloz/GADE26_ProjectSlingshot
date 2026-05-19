@@ -4985,6 +4985,7 @@ GameObject:
   - component: {fileID: 6009540502635836885}
   - component: {fileID: 2598461169506120730}
   - component: {fileID: 2281765379996996655}
+  - component: {fileID: 5996166852364792927}
   m_Layer: 0
   m_Name: Ship
   m_TagString: Untagged
@@ -5002,7 +5003,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 202, y: -151, z: -0.00000026712155}
-  m_LocalScale: {x: 13.44, y: 13.44, z: 13.44}
+  m_LocalScale: {x: 13.440001, y: 13.440001, z: 13.44}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3898319562274967553}
@@ -5101,18 +5102,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77e19fdcbeea4f46bd432b30a7c59ca7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShipController
-  thrustForce: 100
-  strafeDegreesPerSecond: 10
+  thrustForce: 300
+  strafeForce: 300
   rotationSpeed: 10
-  speedDiminishingStart: 500
-  accelerationDropOff: 0.1
+  inputExponent: 2
+  speedDiminishingStart: 1500
+  accelerationDropOff: 0.01
   linearResidueForce: 1
   brakeForceMultiplier: 2
-  initialVelocity: {x: 72.9, y: 19.3, z: 0}
+  startDirection: {x: 90, y: 90, z: 0}
+  startSpeed: 250
   shipRadius: 1.5
   thruster: {fileID: 2460343616894125067}
   thrusterAudio: {fileID: 2598461169506120730}
   thrusterAudioFadeSpeed: 5
+  thrusterSoundName: Thruster
+  bankingMultiplier: 0.5
+  maxBankAngle: 90
+  bankingSmoothSpeed: 1
   trajectoryPredictor: {fileID: 0}
 --- !u!114 &1618331256652047087
 MonoBehaviour:
@@ -5162,6 +5169,7 @@ MonoBehaviour:
     m_NumAlphaKeys: 2
   minImpactForce: 2
   damageMultiplier: 5
+  collisionSoundName: Collision
 --- !u!114 &5469661482627575040
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5231,7 +5239,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!64 &5077435089081596885
@@ -5436,6 +5444,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MinimapIcon
   sprite: {fileID: 21300000, guid: 04f446db2af414eba8495cd020fc8209, type: 3}
   color: {r: 1, g: 1, b: 1, a: 1}
-  worldSize: 25
+  worldSize: 300
   minimapLayer: Minimap
   worldOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &5996166852364792927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7374025900534553994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acb852a1684ad4e319f7bc67bbc25a16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelfDestruct
+  damageRate: 30
+  coolRate: 15
+  playerHealth: {fileID: 1618331256652047087}

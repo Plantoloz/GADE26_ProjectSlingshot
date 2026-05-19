@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class SelfDestruct : MonoBehaviour
 {
@@ -12,31 +11,30 @@ public class SelfDestruct : MonoBehaviour
     [Header("References")]
     public PlayerHealth playerHealth;
 
-    private float _charge; // 0..100
+    private float _charge;
+    private bool  _held;
+
+    public void ResetInput()
+    {
+        _held   = false;
+        _charge = 0f;
+    }
+
+    void OnSelfDestruct(InputValue value)
+    {
+        _held = value.Get<float>() > 0.5f;
+    }
 
     void Update()
     {
-        bool held = IsButtonHeld();
-
-        if (held)
+        if (_held)
             _charge += damageRate * Time.deltaTime;
         else
             _charge -= coolRate * Time.deltaTime;
 
         _charge = Mathf.Clamp(_charge, 0f, 100f);
 
-        if (held && playerHealth != null)
+        if (_held && playerHealth != null)
             playerHealth.TakeDamage(damageRate * Time.deltaTime);
-    }
-
-    bool IsButtonHeld()
-    {
-        if (Keyboard.current != null && Keyboard.current.xKey.isPressed)
-            return true;
-
-        if (Gamepad.current != null && Gamepad.current.buttonSouth.isPressed)
-            return true;
-
-        return false;
     }
 }
