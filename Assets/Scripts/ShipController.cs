@@ -23,7 +23,9 @@ public class ShipController : MonoBehaviour
     public float brakeForceMultiplier = 5f;
 
     [Header("Initial Game Settings")]
-    public Vector3 initialVelocity = new(0f, 0f, 0f);
+    public Vector3 startDirection = Vector3.right;
+    [Min(0f)] public float startSpeed = 0f;
+    public Vector3 StartVelocity => startDirection.normalized * startSpeed;
 
     [Header("Proximity Sensor (Casting)")]
     public float shipRadius = 1.5f;   // Radius for immediate vicinity check
@@ -37,6 +39,14 @@ public class ShipController : MonoBehaviour
     public bool IsThrusting { get; private set; }
     public float LastAppliedThrustForce { get; private set; }
 
+    [Header("Banking")]
+    [Tooltip("How strongly the ship tilts into a turn")]
+    public float bankingMultiplier = 0.5f;
+    [Tooltip("Maximum tilt angle in degrees")]
+    public float maxBankAngle = 30f;
+    [Tooltip("How quickly the ship tilts in and out of turns")]
+    public float bankingSmoothSpeed = 5f;
+
     [Header("References")]
     [Tooltip("Assign the TrajectoryPredictor from its dedicated GameObject.")]
     public TrajectoryPredictor trajectoryPredictor;
@@ -47,6 +57,8 @@ public class ShipController : MonoBehaviour
     private float strafeInput;
     private float thrustInput;
     private float targetThrusterVolume;
+    private Vector3 prevVelocity;
+    private float currentBankAngle;
 
     void Awake()
     {
@@ -55,7 +67,7 @@ public class ShipController : MonoBehaviour
         trajectory = trajectoryPredictor != null ? trajectoryPredictor : GetComponent<TrajectoryPredictor>();
         rb.angularVelocity = Vector3.zero;
 
-        if (thruster != null) thruster.Play();
+        if (thruster != null) thruster.Stop();
         if (thrusterAudio != null)
         {
             thrusterAudio.loop = true;
@@ -75,7 +87,8 @@ public class ShipController : MonoBehaviour
 
     private void Start()
     {
-        rb.linearVelocity = initialVelocity;
+        rb.linearVelocity = StartVelocity;
+        prevVelocity = StartVelocity;
     }
 
     void OnStrafe(InputValue value)
@@ -117,6 +130,10 @@ public class ShipController : MonoBehaviour
         IsThrusting = /*Mathf.Abs(strafeInput) > 0.01f ||*/ Mathf.Abs(thrustInput) > 0.01f;
         LastAppliedThrustForce = 0f;
 
+        // Centripetal acceleration = change in velocity direction (perpendicular to velocity)
+        Vector3 accel = (rb.linearVelocity - prevVelocity) / Time.fixedDeltaTime;
+        prevVelocity = rb.linearVelocity;
+
         // Rotate toward next predicted trajectory point
         if (trajectory != null)
         {
@@ -124,7 +141,18 @@ public class ShipController : MonoBehaviour
             if (toNext.sqrMagnitude > 0.001f)
             {
                 float targetAngle = Mathf.Atan2(toNext.y, toNext.x) * Mathf.Rad2Deg - 90f;
-                Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetAngle);
+
+                // Bank: project centripetal accel onto the ship's right axis (perpendicular to velocity in XY)
+                Vector3 velDir2D = rb.linearVelocity.sqrMagnitude > 0.01f ? rb.linearVelocity.normalized : Vector3.up;
+                Vector3 shipRight = new Vector3(velDir2D.y, -velDir2D.x, 0f);
+                float centripetal = Vector3.Dot(accel, shipRight);
+                float targetBank = Mathf.Clamp(-centripetal * bankingMultiplier, -maxBankAngle, maxBankAngle);
+                currentBankAngle = Mathf.Lerp(currentBankAngle, targetBank, bankingSmoothSpeed * Time.fixedDeltaTime);
+
+                // Roll around the nose axis (velocity direction = local +Y), not the wing axis
+                Quaternion headingRot = Quaternion.Euler(0f, 0f, targetAngle);
+                Quaternion bankRot = Quaternion.AngleAxis(currentBankAngle, velDir2D);
+                Quaternion targetRotation = bankRot * headingRot;
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
                 rb.angularVelocity = Vector3.zero;
             }
@@ -196,11 +224,11 @@ public class ShipController : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, shipRadius);
 
-        if (initialVelocity.sqrMagnitude > 0.001f)
+        if (StartVelocity.sqrMagnitude > 0.001f)
         {
             Gizmos.color = Color.cyan;
-            Gizmos.DrawRay(transform.position, initialVelocity);
-            Gizmos.DrawWireSphere(transform.position + initialVelocity, 0.3f);
+            Gizmos.DrawRay(transform.position, StartVelocity);
+            Gizmos.DrawWireSphere(transform.position + StartVelocity, 0.3f);
         }
     }
 }

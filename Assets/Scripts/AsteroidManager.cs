@@ -8,10 +8,6 @@ public class AsteroidManager : MonoBehaviour
     public MapPath mapPath;
     public bool invertPathMode = false; // If true, asteroids ONLY spawn on tiles. If false, they spawn EVERYWHERE EXCEPT on tiles.
 
-    [Header("Noise Map Settings")]
-    public float noiseScale = 0.05f;      
-    public float noiseThreshold = 0.6f;  
-    
     [Header("Grid Settings")]
     public float cellSize = 10f;          
     public float viewDistance = 100f;     // Visual distance
@@ -121,24 +117,12 @@ public class AsteroidManager : MonoBehaviour
         activeAsteroids.Remove(cell);
     }
 
-    private bool ShouldSpawnAt(Vector2Int cell, Vector3 worldPos)
+    private bool ShouldSpawnAt(Vector2Int _, Vector3 worldPos)
     {
-        float noise = Mathf.PerlinNoise(cell.x * noiseScale + 1000f, cell.y * noiseScale + 1000f);
-        if (noise < noiseThreshold) return false;
-
         if (mapPath != null)
         {
             bool isInside = mapPath.IsPositionInsidePath(worldPos);
-            // If invertPathMode is true, we ONLY spawn INSIDE.
-            // If invertPathMode is false, we ONLY spawn OUTSIDE.
-            if (invertPathMode)
-            {
-                if (!isInside) return false;
-            }
-            else
-            {
-                if (isInside) return false;
-            }
+            if (invertPathMode ? !isInside : isInside) return false;
         }
 
         return true;

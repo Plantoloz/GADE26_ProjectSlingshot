@@ -10,6 +10,8 @@ static class CheckpointSpawnerWatcher
 {
     static readonly Dictionary<GravityBody, Vector3> _cache = new();
     static CheckpointSpawner _spawner;
+    static Vector3 _cachedStartDir;
+    static float   _cachedStartSpeed;
 
     static CheckpointSpawnerWatcher()
     {
@@ -18,13 +20,16 @@ static class CheckpointSpawnerWatcher
 
     static void OnSceneGUI(SceneView sv)
     {
+        if (Application.isPlaying) return;
+
         if (_spawner == null)
             _spawner = Object.FindAnyObjectByType<CheckpointSpawner>();
         if (_spawner == null) return;
 
-        if (HaveBodyPositionsChanged())
+        if (HaveBodyPositionsChanged() || HasShipVelocityChanged())
         {
             CacheBodyPositions();
+            CacheShipVelocity();
             CheckpointSpawnerEditor.BakePath(_spawner);
             CheckpointSpawnerEditor.UpdateLineRenderer(_spawner);
             EditorUtility.SetDirty(_spawner);
@@ -47,11 +52,28 @@ static class CheckpointSpawnerWatcher
         return false;
     }
 
+    static bool HasShipVelocityChanged()
+    {
+        if (_spawner.ship == null) return false;
+        var sc = _spawner.ship.GetComponent<ShipController>();
+        if (sc == null) return false;
+        return sc.startDirection != _cachedStartDir || sc.startSpeed != _cachedStartSpeed;
+    }
+
     internal static void CacheBodyPositions()
     {
         _cache.Clear();
         foreach (var body in Object.FindObjectsByType<GravityBody>(FindObjectsSortMode.None))
             if (body != null) _cache[body] = body.transform.position;
+    }
+
+    internal static void CacheShipVelocity()
+    {
+        if (_spawner?.ship == null) return;
+        var sc = _spawner.ship.GetComponent<ShipController>();
+        if (sc == null) return;
+        _cachedStartDir   = sc.startDirection;
+        _cachedStartSpeed = sc.startSpeed;
     }
 
     internal static void InvalidateSpawner() => _spawner = null;
@@ -69,42 +91,7 @@ public class CheckpointSpawnerEditor : Editor
         var s = (CheckpointSpawner)target;
         serializedObject.Update();
 
-        DrawPropertiesExcluding(serializedObject,
-            "startDirection", "startSpeed", "minSpeed", "maxSpeed",
-            "predictionSteps", "stepTime", "bakedPath");
-
-        EditorGUILayout.Space(8);
-        EditorGUILayout.LabelField("Simulation", EditorStyles.boldLabel);
-
-        EditorGUI.BeginChangeCheck();
-
-        s.startDirection = EditorGUILayout.Vector3Field("Direction", s.startDirection);
-
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("Speed", GUILayout.Width(EditorGUIUtility.labelWidth));
-        s.startSpeed = EditorGUILayout.Slider(s.startSpeed, s.minSpeed, s.maxSpeed);
-        EditorGUILayout.EndHorizontal();
-
-        EditorGUILayout.BeginHorizontal();
-        s.minSpeed = EditorGUILayout.FloatField("Min", s.minSpeed);
-        s.maxSpeed = EditorGUILayout.FloatField("Max", s.maxSpeed);
-        EditorGUILayout.EndHorizontal();
-
-        s.predictionSteps = EditorGUILayout.IntField("Prediction Steps", s.predictionSteps);
-        s.stepTime        = EditorGUILayout.FloatField("Step Time", s.stepTime);
-
-        if (EditorGUI.EndChangeCheck())
-        {
-            BakePath(s);
-            UpdateLineRenderer(s);
-            CheckpointSpawnerWatcher.CacheBodyPositions();
-            EditorUtility.SetDirty(s);
-            SceneView.RepaintAll();
-        }
-
-        GUI.enabled = false;
-        EditorGUILayout.Vector3Field("  → Velocity", s.StartVelocity);
-        GUI.enabled = true;
+        DrawPropertiesExcluding(serializedObject, "bakedPath");
 
         EditorGUILayout.Space(8);
         EditorGUILayout.LabelField("Checkpoint Generation", EditorStyles.boldLabel);
@@ -124,8 +111,7 @@ public class CheckpointSpawnerEditor : Editor
         GUI.enabled = true;
 
         if (hasPath)
-            EditorGUILayout.HelpBox(
-                $"{s.bakedPath.Count} steps  |  vel: {s.StartVelocity:F1}", MessageType.Info);
+            EditorGUILayout.HelpBox($"{s.bakedPath.Count} baked path steps", MessageType.Info);
 
         serializedObject.ApplyModifiedProperties();
     }
@@ -134,14 +120,18 @@ public class CheckpointSpawnerEditor : Editor
 
     internal static void BakePath(CheckpointSpawner s)
     {
+        var tm          = Object.FindAnyObjectByType<TrajectoryManager>();
+        int   steps     = tm != null ? tm.predictionSteps : 600;
+        float dt        = tm != null ? tm.stepTime        : 0.1f;
+
+        var sc  = s.ship != null ? s.ship.GetComponent<ShipController>() : null;
         var sceneBodies = Object.FindObjectsByType<GravityBody>(FindObjectsSortMode.None);
 
         Vector3 pos = s.StartPosition;
-        Vector3 vel = s.StartVelocity;
-        float   dt  = s.stepTime;
-        var points  = new List<Vector3>(s.predictionSteps);
+        Vector3 vel = sc != null ? sc.StartVelocity : Vector3.zero;
+        var points  = new List<Vector3>(steps);
 
-        for (int i = 0; i < s.predictionSteps; i++)
+        for (int i = 0; i < steps; i++)
         {
             if (!float.IsFinite(pos.x) || !float.IsFinite(pos.y)) break;
             points.Add(pos);
@@ -179,13 +169,15 @@ public class CheckpointSpawnerEditor : Editor
         }
     }
 
-    // Live update — no Undo to avoid flooding the undo stack
+    // Live update — notifies TrajectoryManager to refresh its lines
     internal static void UpdateLineRenderer(CheckpointSpawner s)
     {
-        if (s.pathLine == null || s.bakedPath == null || s.bakedPath.Count < 2) return;
-        s.pathLine.positionCount = s.bakedPath.Count;
-        s.pathLine.SetPositions(s.bakedPath.ToArray());
-        EditorUtility.SetDirty(s.pathLine);
+        var tm = Object.FindAnyObjectByType<TrajectoryManager>();
+        if (tm == null) return;
+        tm.RefreshStaticLine();
+        tm.RefreshMinimapLine();
+        if (tm.staticLine  != null) EditorUtility.SetDirty(tm.staticLine);
+        if (tm.minimapLine != null) EditorUtility.SetDirty(tm.minimapLine);
     }
 
     // ── Gizmos ────────────────────────────────────────────────────────────────

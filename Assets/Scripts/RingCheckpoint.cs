@@ -26,32 +26,6 @@ public class RingCheckpoint : CheckpointBase
         var sc    = FindFirstObjectByType<ShipController>();
         if (sc != null) ship = sc.transform;
         renderers = GetComponentsInChildren<Renderer>();
-
-        ReadRadiusFromMesh();
-        ApplyVisuals();
-    }
-
-    // ── Radius auto-detection ─────────────────────────────────────────────────
-
-    [ContextMenu("Read Radius From Mesh")]
-    void ReadRadiusFromMesh()
-    {
-        var mf = GetComponentInChildren<MeshFilter>();
-        if (mf == null || mf.sharedMesh == null) return;
-
-        float minDist = float.MaxValue;
-        foreach (var v in mf.sharedMesh.vertices)
-        {
-            // Convert vertex from MeshFilter local space → world → this local space
-            Vector3 local = transform.InverseTransformPoint(mf.transform.TransformPoint(v));
-            // Ring normal is local Y; project onto local XZ plane to get radial distance
-            float dist = new Vector2(local.x, local.z).magnitude;
-            if (dist > 0.01f && dist < minDist)
-                minDist = dist;
-        }
-
-        if (minDist < float.MaxValue)
-            ringOpeningRadius = minDist;
     }
 
     // ── State transitions ─────────────────────────────────────────────────────
@@ -60,19 +34,16 @@ public class RingCheckpoint : CheckpointBase
     {
         CurrentState = CheckpointState.Active;
         if (ship != null) prevShipPos = ship.position;
-        ApplyVisuals();
     }
 
     public override void Deactivate()
     {
         CurrentState = CheckpointState.Inactive;
-        ApplyVisuals();
     }
 
     public override void Complete()
     {
         CurrentState = CheckpointState.Completed;
-        ApplyVisuals();
     }
 
     // ── Detection ─────────────────────────────────────────────────────────────
@@ -99,26 +70,6 @@ public class RingCheckpoint : CheckpointBase
         }
 
         prevShipPos = ship.position;
-    }
-
-    // ── Visuals ───────────────────────────────────────────────────────────────
-
-    void ApplyVisuals()
-    {
-        Color c = CurrentState switch
-        {
-            CheckpointState.Active    => activeColor,
-            CheckpointState.Completed => completedColor,
-            _                         => inactiveColor
-        };
-
-        var block = new MaterialPropertyBlock();
-        foreach (var r in renderers)
-        {
-            r.GetPropertyBlock(block);
-            block.SetColor(ColorProp, c);
-            r.SetPropertyBlock(block);
-        }
     }
 
     void OnDrawGizmosSelected()
