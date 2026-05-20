@@ -10,7 +10,13 @@ EditorBuildSettings:
     guid: 06336d0baa437490199fceb563c91ef6
   - enabled: 1
     path: Assets/Scenes/DefinitiveLevels/Level02_Sector_Syren.unity
-    guid: 762b08b86f4be42aa8bfc64851e4c65b
+    guid: 443229f8e6aada341aa04c8c10b09c4a
+  - enabled: 1
+    path: Assets/Scenes/DefinitiveLevels/Level03_Trimix.unity
+    guid: b0067ef8030cd174798b1a5eec003e7e
+  - enabled: 1
+    path: Assets/Scenes/DefinitiveLevels/Level04_Qantum.unity
+    guid: 486bb69f7b305ef4390892076d7ce6f8
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
