@@ -18,6 +18,9 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Slider musicVolumeSlider;
     [SerializeField] private Slider sfxVolumeSlider;
 
+    [Header("UI Panels")]
+    [SerializeField] private GameObject levelSelectPanel;
+
     private Stack<GameObject> menuHistory = new Stack<GameObject>();
     private GameObject currentPanel;
     private InputAction cancelAction;
@@ -147,6 +150,20 @@ public class MainMenuManager : MonoBehaviour
     public void OnMusicVolumeChanged(float value) => AudioManager.Instance?.SetMusicVolume(value);
     public void OnSFXVolumeChanged(float value) => AudioManager.Instance?.SetSFXVolume(value);
 
-    public void PlayGame() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    public void PlayGame() 
+    {
+        if (levelSelectPanel != null)
+        {
+            UI_ShowLevelSelect();
+        }
+        else
+        {
+            // Fallback to original behavior if panel isn't assigned
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
+    }
+    
+    public void UI_ShowLevelSelect() => OpenMenu(levelSelectPanel);
+
     public void QuitGame() => Application.Quit();
 }
