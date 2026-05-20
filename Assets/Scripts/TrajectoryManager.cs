@@ -14,7 +14,8 @@ public class TrajectoryManager : MonoBehaviour
 
     [Header("Static Line")]
     public LineRenderer staticLine;
-    public Color        staticColor = Color.white;
+    public Color staticColor = Color.white;
+    public Vector3      staticOffset = Vector3.zero;
     [Range(0f, 1f)] public float dashRatio = 0.5f;
     [Min(0.0001f)]  public float dashScale = 0.001f;
     [Tooltip("Reference to determine which checkpoint was last collected.")]
@@ -199,7 +200,11 @@ public class TrajectoryManager : MonoBehaviour
         if (spawner != null && spawner.bakedPath != null && spawner.bakedPath.Count >= 2)
         {
             staticLine.positionCount = spawner.bakedPath.Count;
-            staticLine.SetPositions(spawner.bakedPath.ToArray());
+            Vector3[] offsetPoints = new Vector3[spawner.bakedPath.Count];
+            for (int i = 0; i < spawner.bakedPath.Count; i++)
+                offsetPoints[i] = spawner.bakedPath[i] + staticOffset;
+            
+            staticLine.SetPositions(offsetPoints);
         }
 
         ApplyDashedMaterial(staticLine, staticColor, dashRatio, dashScale);

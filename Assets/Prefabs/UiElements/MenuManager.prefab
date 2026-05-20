@@ -651,10 +651,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 1038415543843461190}
+        m_TargetAssemblyTypeName: InGameMenuManager, Assembly-CSharp
+        m_MethodName: UI_GoBack
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -662,18 +662,6 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
         m_CallState: 2
 --- !u!1 &1831850012717912629
 GameObject:
@@ -1087,6 +1075,7 @@ GameObject:
   - component: {fileID: 6520804106458723164}
   - component: {fileID: 4901131326382966446}
   - component: {fileID: 8407747646661408682}
+  - component: {fileID: 8684794859834200571}
   m_Layer: 5
   m_Name: Pause Menu
   m_TagString: Untagged
@@ -1153,6 +1142,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8684794859834200571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3641480203171140635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72431e73b3bce1049ba9b334ac6884f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIPanelFocus
+  firstSelected: {fileID: 2948452665824266572}
+  autoRefocus: 1
+  previousSelected: {fileID: 0}
 --- !u!1 &4086180546461053641
 GameObject:
   m_ObjectHideFlags: 0
@@ -1492,6 +1496,7 @@ GameObject:
   - component: {fileID: 8127837434607912608}
   - component: {fileID: 63116039203919423}
   - component: {fileID: 2850107239871940472}
+  - component: {fileID: 7187887038793389999}
   m_Layer: 5
   m_Name: Options Menu
   m_TagString: Untagged
@@ -1560,6 +1565,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7187887038793389999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5081745094712245299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72431e73b3bce1049ba9b334ac6884f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIPanelFocus
+  firstSelected: {fileID: 4331041914096206593}
+  autoRefocus: 1
+  previousSelected: {fileID: 0}
 --- !u!1 &5093635710238564057
 GameObject:
   m_ObjectHideFlags: 0
@@ -2676,9 +2696,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: MainMenuManager, Assembly-CSharp
-        m_MethodName: QuitGame
+      - m_Target: {fileID: 1038415543843461190}
+        m_TargetAssemblyTypeName: InGameMenuManager, Assembly-CSharp
+        m_MethodName: UI_GoBack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2872,6 +2892,7 @@ GameObject:
   - component: {fileID: 7777757512136386430}
   - component: {fileID: 4250573571670116727}
   - component: {fileID: 9024263077644189626}
+  - component: {fileID: 2033679159503506297}
   m_Layer: 5
   m_Name: LeaderboardDisplayPanel
   m_TagString: Untagged
@@ -2938,6 +2959,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2033679159503506297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8515773357348989791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72431e73b3bce1049ba9b334ac6884f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIPanelFocus
+  firstSelected: {fileID: 7225209295403223221}
+  autoRefocus: 1
+  previousSelected: {fileID: 0}
 --- !u!1 &8612879812834748652
 GameObject:
   m_ObjectHideFlags: 0
@@ -3408,10 +3444,18 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1038415543843461190}
+    - target: {fileID: 1120484679586451828, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: UI_Resume
+      objectReference: {fileID: 0}
     - target: {fileID: 2201603296178598415, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1038415543843461190}
+    - target: {fileID: 2201603296178598415, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: UI_Restart
+      objectReference: {fileID: 0}
     - target: {fileID: 3177916269955215347, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -3452,6 +3496,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1038415543843461190}
+    - target: {fileID: 4407276573267322176, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: UI_ShowLeaderboard
+      objectReference: {fileID: 0}
     - target: {fileID: 4823431008297788475, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -3550,7 +3598,7 @@ PrefabInstance:
       objectReference: {fileID: 1038415543843461190}
     - target: {fileID: 7074690161159647369, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: QuitToMainMenu
+      value: UI_Quit
       objectReference: {fileID: 0}
     - target: {fileID: 8295328185572876912, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
       propertyPath: m_AnchorMax.y
@@ -3568,6 +3616,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1038415543843461190}
+    - target: {fileID: 9156428516631003643, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: UI_ShowOptions
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3576,5 +3628,10 @@ PrefabInstance:
 --- !u!224 &1933758124635147464 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5039816196632159762, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
+  m_PrefabInstance: {fileID: 6856467529701944026}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2948452665824266572 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8632295441425245078, guid: 3e78c5d0e061c35479e0b0e4a82f5cfe, type: 3}
   m_PrefabInstance: {fileID: 6856467529701944026}
   m_PrefabAsset: {fileID: 0}
