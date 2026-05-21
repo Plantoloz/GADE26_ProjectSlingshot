@@ -57,9 +57,27 @@ public class InGameMenuManager : MonoBehaviour
     {
         _isPaused = false;
         Time.timeScale = 1f;
-        
-        ForceCloseAllMenus(); // Ensures panels are physically disabled on load
+
+        FindSceneReferences();
+        ForceCloseAllMenus();
         InitializeInput();
+    }
+
+    private void FindSceneReferences()
+    {
+        leaderboardUI = Object.FindFirstObjectByType<LeaderboardUI>(FindObjectsInactive.Include);
+
+        if (pauseMenuPanel == null || !pauseMenuPanel.scene.IsValid())
+        {
+            var found = GameObject.Find("Pause Menu");
+            if (found != null) pauseMenuPanel = found;
+        }
+
+        if (optionsPanel == null || !optionsPanel.scene.IsValid())
+        {
+            var found = GameObject.Find("Options Menu");
+            if (found != null) optionsPanel = found;
+        }
     }
 
     private void InitializeInput()

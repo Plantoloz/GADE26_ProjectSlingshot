@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
@@ -14,6 +15,7 @@ public class LeaderboardUI : MonoBehaviour
     [Header("Display UI")]
     public GameObject displayPanel;
     public TextMeshProUGUI leaderboardText;
+    public Button retryButton;
     public Button closeButton;
 
     private float finalTime;
@@ -23,7 +25,10 @@ public class LeaderboardUI : MonoBehaviour
         inputPanel.SetActive(false);
         displayPanel.SetActive(false);
         submitButton.onClick.AddListener(OnSubmit);
-        // Listener is now managed by InGameMenuManager for better navigation flow
+        if (retryButton != null)
+            retryButton.onClick.AddListener(RestartLevel);
+        if (closeButton != null)
+            closeButton.onClick.AddListener(OnClose);
     }
 
     public void ShowEntry(float time)
@@ -85,6 +90,9 @@ public class LeaderboardUI : MonoBehaviour
             leaderboardText.text += $"{i + 1}. {entries[i].playerName} - {minutes:00}:{seconds:00}.{hundredths}\n";
         }
         
+        if (retryButton != null)
+            EventSystem.current?.SetSelectedGameObject(retryButton.gameObject);
+
         CheckForEventSystem();
     }
 
@@ -93,6 +101,18 @@ public class LeaderboardUI : MonoBehaviour
         if (UnityEngine.EventSystems.EventSystem.current == null)
         {
             Debug.LogError("[LeaderboardUI] NO EVENTSYSTEM FOUND IN SCENE! UI will not be interactive.");
+        }
+    }
+
+    private void OnClose()
+    {
+        if (InGameMenuManager.Instance != null && InGameMenuManager.Instance.IsPaused)
+        {
+            displayPanel.SetActive(false);
+        }
+        else
+        {
+            InGameMenuManager.Instance?.UI_Quit();
         }
     }
 

@@ -9,6 +9,7 @@ public class LeaderboardEntry
 {
     public string playerName;
     public float time;
+    public string sceneName;
 }
 
 [Serializable]
@@ -42,20 +43,29 @@ public class LeaderboardManager : MonoBehaviour
 
     public void AddEntry(string name, float time)
     {
-        currentData.entries.Add(new LeaderboardEntry { playerName = name, time = time });
-        
-        // Sort by time (ascending, since lower time is better in racing/slingshot)
-        currentData.entries = currentData.entries
+        string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        currentData.entries.Add(new LeaderboardEntry { playerName = name, time = time, sceneName = scene });
+
+        // Keep only the top MaxEntries per scene
+        var sceneEntries = currentData.entries
+            .Where(e => e.sceneName == scene)
             .OrderBy(e => e.time)
             .Take(MaxEntries)
             .ToList();
+
+        currentData.entries.RemoveAll(e => e.sceneName == scene);
+        currentData.entries.AddRange(sceneEntries);
 
         SaveLeaderboard();
     }
 
     public List<LeaderboardEntry> GetEntries()
     {
-        return currentData.entries;
+        string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        return currentData.entries
+            .Where(e => e.sceneName == scene)
+            .OrderBy(e => e.time)
+            .ToList();
     }
 
     private void SaveLeaderboard()

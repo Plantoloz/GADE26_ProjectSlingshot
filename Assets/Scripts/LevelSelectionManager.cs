@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System.IO;
 
@@ -14,6 +15,8 @@ public class LevelSelectionManager : MonoBehaviour
     public Transform gridParent;
     public Sprite defaultPreview;
 
+    private GameObject firstButton;
+
     private void Awake()
     {
         Debug.Log("[LevelSelectionManager] Awake: Script is active and alive.");
@@ -23,6 +26,12 @@ public class LevelSelectionManager : MonoBehaviour
     {
         Debug.Log("[LevelSelectionManager] Start: Calling PopulateLevelList.");
         PopulateLevelList();
+    }
+
+    private void OnEnable()
+    {
+        if (firstButton != null)
+            EventSystem.current?.SetSelectedGameObject(firstButton);
     }
 
     [ContextMenu("Force Refresh")]
@@ -91,12 +100,15 @@ public class LevelSelectionManager : MonoBehaviour
             {
                 // Format the name nicely (e.g., Level02_Sector_Syren -> Sector Syren)
                 string displayName = sceneName.Replace("Level", "").Replace("_", " ").Trim();
-                
+
                 // Remove leading numbers if they exist (e.g., "02 Sector Syren" -> "Sector Syren")
                 if (displayName.Length > 2 && char.IsDigit(displayName[0]) && char.IsDigit(displayName[1]))
                     displayName = displayName.Substring(2).Trim();
 
                 levelUI.Setup(displayName, preview, scenePath);
+
+                if (firstButton == null)
+                    firstButton = buttonObj;
             }
         }
     }
