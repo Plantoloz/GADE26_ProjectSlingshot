@@ -246122,7 +246122,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RingCheckpoint
   respawnOffset: 5
-  ringOpeningRadius: 479.1
+  ringOpeningRadius: 800
+  outerRingOpeningRadius: 200
+  innerRingOpeningRadius: 25
+  excellentSound: {fileID: 8300000, guid: 2ef25de1e062e40cf91205d1d6d03362, type: 3}
+  goodSound: {fileID: 8300000, guid: 313293c78b329482084697c2226f7cf4, type: 3}
+  missSound: {fileID: 8300000, guid: 6ed045ceb3e644028a92fd69a831c46b, type: 3}
   inactiveColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   activeColor: {r: 1, g: 0.9, b: 0, a: 1}
   completedColor: {r: 0, g: 1, b: 0.4, a: 1}
@@ -246133,7 +246138,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8204279553596881603}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4b8c065e87624d488f02e70004ad569, type: 3}
   m_Name: 

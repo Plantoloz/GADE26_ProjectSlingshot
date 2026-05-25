@@ -6,7 +6,7 @@ public class SoundEffect
 {
     public string name;
     public AudioClip clip;
-    [Range(0f, 1f)] public float volumeMultiplier = 1f;
+    [Range(0f, 2f)] public float volumeMultiplier = 1f;
 }
 
 public class AudioManager : MonoBehaviour

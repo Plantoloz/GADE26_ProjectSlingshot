@@ -322,5 +322,14 @@ MonoBehaviour:
   - name: Collision
     clip: {fileID: 8300000, guid: b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2, type: 3}
     volumeMultiplier: 1
+  - name: CheckpointExcellent
+    clip: {fileID: 8300000, guid: 2ef25de1e062e40cf91205d1d6d03362, type: 3}
+    volumeMultiplier: 1.52
+  - name: CheckpointGood
+    clip: {fileID: 8300000, guid: 313293c78b329482084697c2226f7cf4, type: 3}
+    volumeMultiplier: 1.52
+  - name: CheckpointMiss
+    clip: {fileID: 8300000, guid: 6ed045ceb3e644028a92fd69a831c46b, type: 3}
+    volumeMultiplier: 1.53
   backgroundMusic: {fileID: 8300000, guid: ee3157392f0154ca3bacee2c775664ad, type: 3}
   collisionSound: {fileID: 8300000, guid: b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2, type: 3}

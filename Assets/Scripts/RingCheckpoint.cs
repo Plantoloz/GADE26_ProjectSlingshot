@@ -8,6 +8,15 @@ public class RingCheckpoint : CheckpointBase
     [Header("Detection")]
     [Tooltip("Auto-filled from mesh on Awake. Override manually if needed.")]
     public float ringOpeningRadius = 8f;
+    [Tooltip("Distance from center for 'Good' rating (must be < ringOpeningRadius)")]
+    public float outerRingOpeningRadius = 5f;
+    [Tooltip("Distance from center for 'Excellent' rating (must be < outerRingOpeningRadius)")]
+    public float innerRingOpeningRadius = 2f;
+
+    [Header("Hit Sounds")]
+    public AudioClip excellentSound;
+    public AudioClip goodSound;
+    public AudioClip missSound;
 
     [Header("Colors")]
     public Color inactiveColor  = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -66,27 +75,45 @@ public class RingCheckpoint : CheckpointBase
             Vector3 inPlane  = crossing - Vector3.Dot(crossing, transform.up) * transform.up;
 
             if (inPlane.magnitude <= ringOpeningRadius)
+            {
+                PlayHitSound(inPlane.magnitude);
                 manager?.OnCheckpointReached(this);
+            }
         }
 
         prevShipPos = ship.position;
     }
 
+    private void PlayHitSound(float hitDistance)
+    {
+        if (AudioManager.Instance == null) return;
+        AudioClip clip = hitDistance <= innerRingOpeningRadius ? excellentSound
+                       : hitDistance <= outerRingOpeningRadius ? goodSound
+                       : missSound;
+        AudioManager.Instance.PlaySFX(clip);
+    }
+
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
-        // Disc in the ring plane (perpendicular to transform.up)
         int segments = 48;
-        Vector3 prev = transform.position + transform.right * ringOpeningRadius;
-        for (int i = 1; i <= segments; i++)
+        void DrawDisc(float radius, Color color)
         {
-            float a    = 2f * Mathf.PI * i / segments;
-            Vector3 next = transform.position
-                         + transform.right   * Mathf.Cos(a) * ringOpeningRadius
-                         + transform.forward * Mathf.Sin(a) * ringOpeningRadius;
-            Gizmos.DrawLine(prev, next);
-            prev = next;
+            Gizmos.color = color;
+            Vector3 p = transform.position + transform.right * radius;
+            for (int i = 1; i <= segments; i++)
+            {
+                float a = 2f * Mathf.PI * i / segments;
+                Vector3 n = transform.position
+                          + transform.right   * Mathf.Cos(a) * radius
+                          + transform.forward * Mathf.Sin(a) * radius;
+                Gizmos.DrawLine(p, n);
+                p = n;
+            }
         }
+
+        DrawDisc(ringOpeningRadius,      Color.yellow);
+        DrawDisc(outerRingOpeningRadius, Color.green);
+        DrawDisc(innerRingOpeningRadius, Color.cyan);
         // Normal arrow so you can see which axis is the ring normal
         Gizmos.color = Color.cyan;
         Gizmos.DrawRay(transform.position, transform.up * ringOpeningRadius);
