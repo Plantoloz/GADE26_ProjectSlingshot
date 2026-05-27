@@ -96,6 +96,8 @@ public class LevelSelectionManager : MonoBehaviour
 
             // Instantiate and setup button
             GameObject buttonObj = Instantiate(levelButtonPrefab, gridParent);
+            if (buttonObj.GetComponent<UIButtonSounds>() == null)
+                buttonObj.AddComponent<UIButtonSounds>();
             if (buttonObj.TryGetComponent<LevelButtonUI>(out var levelUI))
             {
                 // Format the name nicely (e.g., Level02_Sector_Syren -> Sector Syren)

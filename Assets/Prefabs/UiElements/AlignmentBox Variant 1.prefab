@@ -287,7 +287,7 @@ GameObject:
   - component: {fileID: 6060268166260227255}
   - component: {fileID: 7074690161159647369}
   m_Layer: 5
-  m_Name: Leaderboard
+  m_Name: Main Menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -308,9 +308,9 @@ RectTransform:
   - {fileID: 4219864996704789441}
   m_Father: {fileID: 5039816196632159762}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: -200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 422.4332, y: 50}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &4067839740463778184
@@ -397,7 +397,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InGameMenuManager, Assembly-CSharp
-        m_MethodName: ShowLeaderboard
+        m_MethodName: UI_Quit
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -715,9 +715,9 @@ RectTransform:
   - {fileID: 7430318657238206607}
   m_Father: {fileID: 5039816196632159762}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: -100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 422.4332, y: 50}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &4976444842363853597
@@ -804,7 +804,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InGameMenuManager, Assembly-CSharp
-        m_MethodName: ShowLeaderboard
+        m_MethodName: UI_ShowLeaderboard
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -848,9 +848,9 @@ RectTransform:
   - {fileID: 8662710383204879341}
   m_Father: {fileID: 5039816196632159762}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: -50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 422.4332, y: 50}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &2242538250576905575
@@ -937,7 +937,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InGameMenuManager, Assembly-CSharp
-        m_MethodName: ShowOptions
+        m_MethodName: UI_ShowOptions
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -981,9 +981,9 @@ RectTransform:
   - {fileID: 5751250631786822207}
   m_Father: {fileID: 5039816196632159762}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: -150}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 422.4332, y: 50}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &5687157094534791244
@@ -1070,7 +1070,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InGameMenuManager, Assembly-CSharp
-        m_MethodName: RestartLevel
+        m_MethodName: UI_Restart
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1174,11 +1174,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5375173766270250459, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5375173766270250459, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5375173766270250459, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1194,7 +1194,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7609362026250835407, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: TogglePause
+      value: UI_Resume
       objectReference: {fileID: 0}
     - target: {fileID: 7609362026250835407, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
@@ -1217,8 +1217,28 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2586234638616142505, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4823431008297788475}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7584481688057771357, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9139303907040321239}
   m_SourcePrefab: {fileID: 100100000, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
+--- !u!1 &1104610588507566566 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7584481688057771357, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}
+  m_PrefabInstance: {fileID: 7355821384142128315}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &9139303907040321239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104610588507566566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15c72f2ee43a94b7699b96a9b15da9c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIMenuSounds
 --- !u!224 &5039816196632159762 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2586234638616142505, guid: a115bb8a978b5e44abe7863fca9417e5, type: 3}

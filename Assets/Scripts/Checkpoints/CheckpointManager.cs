@@ -12,6 +12,10 @@ public class CheckpointManager : MonoBehaviour
     [Header("References")]
     public TrajectoryManager trajectoryManager;
 
+    [Header("Visibility")]
+    [Tooltip("How many upcoming checkpoints are visible at once.")]
+    [SerializeField] private int visibleAhead = 2;
+
     [Header("Events")]
     public UnityEvent onAllCheckpointsCompleted;
 
@@ -27,6 +31,22 @@ public class CheckpointManager : MonoBehaviour
             if (cp != null) cp.Deactivate();
 
         AdvanceToNext();
+    }
+
+    private void SetCheckpointVisible(CheckpointBase cp, bool visible)
+    {
+        if (cp == null) return;
+        foreach (var r in cp.GetComponentsInChildren<Renderer>())
+            r.enabled = visible;
+    }
+
+    private void UpdateVisibility()
+    {
+        for (int i = 0; i < checkpoints.Count; i++)
+        {
+            bool show = i >= CurrentIndex && i < CurrentIndex + visibleAhead;
+            SetCheckpointVisible(checkpoints[i], show);
+        }
     }
 
     public void OnCheckpointReached(CheckpointBase cp)
@@ -55,6 +75,7 @@ public class CheckpointManager : MonoBehaviour
         }
 
         checkpoints[CurrentIndex].Activate();
+        UpdateVisibility();
     }
 
     public void RespawnAtLastCheckpoint()
