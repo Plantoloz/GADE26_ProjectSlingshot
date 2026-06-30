@@ -51,6 +51,10 @@ public class ShipController : MonoBehaviour
     [Tooltip("How quickly the ship tilts in and out of turns")]
     public float bankingSmoothSpeed = 5f;
 
+    [Header("Brake Flip")]
+    [Tooltip("How fast the ship rotates to face backwards when braking (degrees/sec scale)")]
+    public float brakeFlipSpeed = 3f;
+
     [Header("References")]
     [Tooltip("Assign the TrajectoryPredictor from its dedicated GameObject.")]
     public TrajectoryPredictor trajectoryPredictor;
@@ -63,6 +67,7 @@ public class ShipController : MonoBehaviour
     private float targetThrusterVolume;
     private Vector3 prevVelocity;
     private float currentBankAngle;
+    private float currentBrakeFlip;
 
     void Awake()
     {
@@ -145,6 +150,9 @@ public class ShipController : MonoBehaviour
             Vector3 toNext = trajectory.NextPredictedPoint - transform.position;
             if (toNext.sqrMagnitude > 0.001f)
             {
+                float brakeFlipTarget = thrustInput < -0.05f ? 1f : 0f;
+                currentBrakeFlip = Mathf.Lerp(currentBrakeFlip, brakeFlipTarget, brakeFlipSpeed * Time.fixedDeltaTime);
+
                 float targetAngle = Mathf.Atan2(toNext.y, toNext.x) * Mathf.Rad2Deg - 90f;
 
                 // Bank: project centripetal accel onto the ship's right axis (perpendicular to velocity in XY)
@@ -157,7 +165,8 @@ public class ShipController : MonoBehaviour
                 // Roll around the nose axis (velocity direction = local +Y), not the wing axis
                 Quaternion headingRot = Quaternion.Euler(0f, 0f, targetAngle);
                 Quaternion bankRot = Quaternion.AngleAxis(currentBankAngle, velDir2D);
-                Quaternion targetRotation = bankRot * headingRot;
+                Quaternion brakeFlipRot = Quaternion.Euler(-currentBrakeFlip * 180f, 0f, 0f);
+                Quaternion targetRotation = bankRot * headingRot * brakeFlipRot;
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
                 rb.angularVelocity = Vector3.zero;
             }

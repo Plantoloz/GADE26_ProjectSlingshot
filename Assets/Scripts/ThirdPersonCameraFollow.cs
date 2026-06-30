@@ -28,6 +28,12 @@ public class ThirdPersonCameraFollow : MonoBehaviour
 
     Vector3 ShipFacing()
     {
+        if (_rb != null)
+        {
+            Vector2 v2 = new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.y);
+            if (v2.sqrMagnitude > 0.01f)
+                return new Vector3(v2.normalized.x, v2.normalized.y, 0f);
+        }
         Vector3 f = new Vector3(target.up.x, target.up.y, 0f);
         return f.sqrMagnitude < 0.001f ? Vector3.up : f.normalized;
     }
@@ -35,7 +41,7 @@ public class ThirdPersonCameraFollow : MonoBehaviour
     void Start()
     {
         if (target == null) return;
-        _rb = target.GetComponent<Rigidbody>();
+        _rb = target.GetComponent<Rigidbody>();  // must be assigned before ShipFacing()
 
         Vector3 facing = ShipFacing();
         _smoothUp = facing;
