@@ -7,7 +7,7 @@ Take part in the galaxy’s most anticipated slingshot race, where the toughest 
 - Controller - Left stick X axis to strafe and right stick Y axis to accelerate/brake, hold South Button to respawn
 ## Goal
 Fly trough each ring checkpoint and reach the finish line as fast as possible.<br>
-*RACE*
+*RACE*<br>
 ##Implemented Unity Tool
 To easen the creation of new tracks, we implemented a simple Unity tool to adjust the length of the track, the amount of checkpoints and that the track will be automaticaly adjusted to changes of gravity bodies such as the spaceship and the planets. <br>
 <img width="640" height="480" alt="Bildschirmaufnahme 2026-10-20 um 15 42 42" src="https://github.com/user-attachments/assets/b8b1e73e-e80b-4016-a648-4f86a73917b6" />
